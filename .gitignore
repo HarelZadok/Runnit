@@ -39,3 +39,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# IDE directories
+.vscode/
+.idea/
+
+# ESLint cache
+.eslintcache
+
+# Turbopack cache
+/.turbo/
+
+# Miscellaneous caches and OS files
+.cache/
+Thumbs.db
