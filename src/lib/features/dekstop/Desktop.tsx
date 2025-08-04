@@ -4,16 +4,17 @@ import { useAppSelector, useAppDispatch } from '@/lib/hooks';
 import { OSAppFile } from '@/lib/features/OSApp/OSAppFile';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Taskbar from '@/lib/features/taskbar/Taskbar';
-import { addApp, clearActiveApps, setActiveApps } from '@/lib/features/dekstop/desktopSlice';
+import { addDesktopApp, clearActiveDesktopApps, setActiveDesktopApps } from '@/lib/features/dekstop/desktopSlice';
 import OSAppWindow from '@/lib/features/OSApp/OSAppWindow';
 import appRegistry from '@/lib/OSApps/AppRegistry';
 import '@/lib/OSApps/AppList';
+import { cancelShowTaskbar, showTaskbar } from '@/lib/features/taskbar/taskbarSlice';
 
 
 export default function Desktop() {
 	const TEST_APPS = false;
 
-	let apps = useAppSelector(state => state.desktop.apps);
+	let apps = useAppSelector(state => state.desktop.desktopApps);
 	if (TEST_APPS)
 		apps = Array.from({ length: 50 }, (_, i) => ({
 			id: i,
@@ -25,6 +26,9 @@ export default function Desktop() {
 	const background = useAppSelector(state => state.settings.background);
 	const taskbarHeight = useAppSelector(state => state.settings.taskbarHeight);
 	const iconScale = useAppSelector(state => state.settings.iconScale);
+	const taskbarHideRate = useAppSelector(state => state.taskbar.hideRate);
+	const taskbarForceShow = useAppSelector(state => state.taskbar.forceShow);
+	const [showingTaskbar, setShowingTaskbar] = useState(false);
 	const [columnHeight, setColumnHeight] = useState<number>(-1);
 	const [isSelecting, setIsSelecting] = useState<boolean>(false);
 	const [selectionXStart, setSelectionXStart] = useState(-1);
@@ -70,7 +74,7 @@ export default function Desktop() {
 
 	const onDragStart = useCallback((event: React.DragEvent<HTMLDivElement>) => {
 		if (event.button === 0) {
-			dispatch(clearActiveApps());
+			dispatch(clearActiveDesktopApps());
 			setSelectionXStart(event.clientX);
 			setSelectionYStart(event.clientY);
 			setIsSelecting(true);
@@ -82,11 +86,18 @@ export default function Desktop() {
 			setSelectionXEnd(event.clientX);
 			setSelectionYEnd(event.clientY);
 		}
-	}, [isSelecting]);
+		if (taskbarHideRate > 0 && !showingTaskbar && event.clientY >= window.innerHeight - 1) {
+			setShowingTaskbar(true);
+			dispatch(showTaskbar());
+		} else if (showingTaskbar && event.clientY < window.innerHeight - taskbarHeight) {
+			setShowingTaskbar(false);
+			dispatch(cancelShowTaskbar());
+		}
+	}, [dispatch, isSelecting, showingTaskbar, taskbarHeight, taskbarHideRate]);
 
 	const onDragEnd = useCallback((event: React.DragEvent<HTMLDivElement>) => {
 		if (isSelecting && selectionXStart !== -1 && selectionXEnd !== -1 && selectionYStart !== -1 && selectionYEnd !== -1) {
-			dispatch(setActiveApps(getAppsInSelectionBox()));
+			dispatch(setActiveDesktopApps(getAppsInSelectionBox()));
 			setSelectionXStart(-1);
 			setSelectionXEnd(-1);
 			setSelectionYStart(-1);
@@ -117,10 +128,8 @@ export default function Desktop() {
 	}, [iconScale, taskbarHeight]);
 
 	useEffect(() => {
-		console.log(appRegistry);
 		for (const app of appRegistry.apps) {
-			console.log(app);
-			dispatch(addApp(app.app.getProps().appFile));
+			dispatch(addDesktopApp(app.app.getProps().appFile));
 		}
 	}, [dispatch]);
 
@@ -162,10 +171,15 @@ export default function Desktop() {
 				}}
 			>
 				{apps.map((app, i) => (
-					<OSAppFile key={app.id} name={app.name} icon={app.icon} id={app.id}
-										 ref={el => {
-											 if (el) itemRefs.current[i] = el;
-										 }} />
+					<OSAppFile
+						key={app.id}
+						props={app}
+						onMenu={() => {
+
+						}}
+						ref={el => {
+							if (el) itemRefs.current[i] = el;
+						}} />
 				))}
 			</div>
 		}

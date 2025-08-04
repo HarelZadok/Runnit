@@ -1,52 +1,54 @@
+// desktopSlice.ts: Redux slice for managing desktop icons and active selections
+
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { OSAppFileProps } from '@/lib/features/OSApp/OSAppFile';
 
 export interface desktopState {
-	apps: OSAppFileProps[];
-	activeApps: OSAppFileProps[];
+	desktopApps: OSAppFileProps[];
+	activeDesktopApps: OSAppFileProps[];
 }
 
 const initialState: desktopState = {
-	apps: [],
-	activeApps: [],
+	desktopApps: [],
+	activeDesktopApps: [],
 };
 
 export const desktopSlice = createSlice({
 	name: 'desktop',
 	initialState,
 	reducers: {
-		addApp: (state, action: PayloadAction<OSAppFileProps>) => {
-			state.apps.push(action.payload);
+		addDesktopApp: (state, action: PayloadAction<OSAppFileProps>) => {
+			state.desktopApps.push(action.payload);
 		},
-		removeApp: (state, action: PayloadAction<OSAppFileProps>) => {
-			state.apps = state.apps.filter(app => app.id != action.payload.id);
+		removeDesktopApp: (state, action: PayloadAction<OSAppFileProps>) => {
+			state.desktopApps = state.desktopApps.filter(app => app.id != action.payload.id);
 		},
-		renameApp: (state, action: PayloadAction<[number, string]>) => {
-			const i = state.apps.findIndex((app) => app.id === action.payload[0]);
-			if (i !== -1) state.apps[i].name = action.payload[1];
+		renameDesktopApp: (state, action: PayloadAction<[number, string]>) => {
+			const i = state.desktopApps.findIndex((app) => app.id === action.payload[0]);
+			if (i !== -1) state.desktopApps[i].name = action.payload[1];
 		},
-		clearActiveApps: (state) => {
-			state.activeApps = [];
+		clearActiveDesktopApps: (state) => {
+			state.activeDesktopApps = [];
 		},
-		addActiveApp: (state, action: PayloadAction<OSAppFileProps>) => {
-			state.activeApps.push(action.payload);
+		addActiveDesktopApp: (state, action: PayloadAction<OSAppFileProps>) => {
+			state.activeDesktopApps.push(action.payload);
 		},
-		setActiveApps: (state, action: PayloadAction<OSAppFileProps[]>) => {
-			state.activeApps = action.payload;
+		setActiveDesktopApps: (state, action: PayloadAction<OSAppFileProps[]>) => {
+			state.activeDesktopApps = action.payload;
 		},
-		removeActiveApp: (state, action: PayloadAction<OSAppFileProps>) => {
-			state.activeApps = state.activeApps.filter(app => app.id !== action.payload.id);
+		removeActiveDesktopApp: (state, action: PayloadAction<OSAppFileProps>) => {
+			state.activeDesktopApps = state.activeDesktopApps.filter(app => app.id !== action.payload.id);
 		},
 	},
 });
 
 export const {
-	addApp,
-	removeApp,
-	renameApp,
-	clearActiveApps,
-	addActiveApp,
-	removeActiveApp,
-	setActiveApps,
+	addDesktopApp,
+	removeDesktopApp,
+	renameDesktopApp,
+	clearActiveDesktopApps,
+	addActiveDesktopApp,
+	removeActiveDesktopApp,
+	setActiveDesktopApps,
 } = desktopSlice.actions;
 export default desktopSlice.reducer;

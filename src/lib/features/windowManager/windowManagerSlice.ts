@@ -1,3 +1,4 @@
+// windowManagerSlice.ts: Manages state of open application windows (minimize, maximize, focus, and z-index)
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface appInstance {
@@ -9,8 +10,8 @@ export interface appInstance {
 }
 
 export interface windowManagerState {
-	openApps: appInstance[];
-	focusZIndex: number;
+	openApps: appInstance[];  // Active window instances
+	focusZIndex: number;      // Current highest z-index for focus stacking
 }
 
 const initialState: windowManagerState = {
@@ -22,6 +23,7 @@ export const windowManagerSlice = createSlice({
 	name: 'windowManager',
 	initialState,
 	reducers: {
+		// Launch or focus an app window; increments z-index and handles restore
 		launchApp: (state, action: PayloadAction<number>) => {
 			state.focusZIndex++;
 			const app = state.openApps.find(app => app.pid === action.payload);
@@ -38,6 +40,7 @@ export const windowManagerSlice = createSlice({
 				zIndex: state.focusZIndex,
 			});
 		},
+		// Close window and adjust z-index for remaining windows
 		closeApp: (state, action: PayloadAction<number>) => {
 			state.openApps = state.openApps.filter(instance => instance.pid !== action.payload);
 			if (state.openApps.length === 0) {
@@ -47,6 +50,7 @@ export const windowManagerSlice = createSlice({
 				state.openApps[0].zIndex = state.focusZIndex++;
 			}
 		},
+		// Minimize the specified app window
 		minimizeApp: (state, action: PayloadAction<number>) => {
 			const app = state.openApps.find(app => app.pid === action.payload);
 			if (app) {
@@ -54,6 +58,7 @@ export const windowManagerSlice = createSlice({
 				app.isFocused = false;
 			}
 		},
+		// Restore a minimized window and bring to focus
 		unminimizeApp: (state, action: PayloadAction<number>) => {
 			state.focusZIndex++;
 			const app = state.openApps.find(app => app.pid === action.payload);
@@ -64,16 +69,19 @@ export const windowManagerSlice = createSlice({
 				app.zIndex = state.focusZIndex;
 			}
 		},
+		// Maximize the specified window
 		maximizeApp: (state, action: PayloadAction<number>) => {
 			const app = state.openApps.find(app => app.pid === action.payload);
 			if (app)
 				app.isMaximized = true;
 		},
+		// Restore window from maximized state
 		unmaximizeApp: (state, action: PayloadAction<number>) => {
 			const app = state.openApps.find(app => app.pid === action.payload);
 			if (app)
 				app.isMaximized = false;
 		},
+		// Bring an existing window to front (update focus and z-index)
 		focusApp: (state, action: PayloadAction<number>) => {
 			state.focusZIndex++;
 			state.openApps.map(app => app.isFocused = false);
@@ -83,6 +91,7 @@ export const windowManagerSlice = createSlice({
 				app.zIndex = state.focusZIndex;
 			}
 		},
+		// Remove focus from the specified window without altering z-index
 		unfocusApp: (state, action: PayloadAction<number>) => {
 			const app = state.openApps.find(app => app.pid === action.payload);
 			if (app)

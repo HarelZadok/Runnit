@@ -1,3 +1,5 @@
+// settingsSlice.ts: Manages user preferences such as wallpaper, taskbar height, and icon scale
+
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface settingsState {
@@ -19,14 +21,14 @@ export const settingsSlice = createSlice({
 		setTaskbarHeight: (state, height: PayloadAction<number>) => {
 			state.taskbarHeight = height.payload;
 		},
-		changeBackground: (state, src: PayloadAction<string>) => {
+		changeDesktopBackground: (state, src: PayloadAction<string>) => {
 			state.background = src.payload;
 		},
-		setIconScale: (state, scale: PayloadAction<number>) => {
+		setDesktopIconScale: (state, scale: PayloadAction<number>) => {
 			state.iconScale = scale.payload;
 		},
 	},
 });
 
-export const { setTaskbarHeight, changeBackground, setIconScale } = settingsSlice.actions;
+export const { setTaskbarHeight, changeDesktopBackground, setDesktopIconScale } = settingsSlice.actions;
 export default settingsSlice.reducer;
