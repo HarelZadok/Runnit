@@ -88,7 +88,7 @@ export default function AppLauncher() {
 						textColor="black"
 						props={app}
 						onMenu={() => {
-							if (!desktopApps.includes(app))
+							if (!desktopApps.some(cApp => cApp.id === app.id))
 								dispatch(addDesktopApp(app));
 							else
 								dispatch(removeDesktopApp(app));
