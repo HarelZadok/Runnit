@@ -1,15 +1,23 @@
 'use client';
 
-import { useAppSelector, useAppDispatch } from '@/lib/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import { OSAppFile } from '@/lib/features/OSApp/OSAppFile';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Taskbar from '@/lib/features/taskbar/Taskbar';
-import { addDesktopApp, clearActiveDesktopApps, setActiveDesktopApps } from '@/lib/features/dekstop/desktopSlice';
-import OSAppWindow from '@/lib/features/OSApp/OSAppWindow';
+import {
+	addActiveDesktopApp,
+	clearActiveDesktopApps,
+	removeActiveDesktopApp,
+	setActiveDesktopApps,
+} from '@/lib/features/dekstop/desktopSlice';
+import OSAppWindow, { AppWindowProps } from '@/lib/features/OSApp/OSAppWindow';
 import appRegistry from '@/lib/OSApps/AppRegistry';
 import '@/lib/OSApps/AppList';
 import { cancelShowTaskbar, showTaskbar } from '@/lib/features/taskbar/taskbarSlice';
-
+import AppLauncher from '@/lib/features/appLauncher/AppLauncher';
+import { launchApp } from '@/lib/features/windowManager/windowManagerSlice';
+import { changeDesktopBackground } from '@/lib/features/settings/settingsSlice';
+import { getSetting } from '@/lib/functions';
 
 export default function Desktop() {
 	const TEST_APPS = false;
@@ -23,11 +31,11 @@ export default function Desktop() {
 		}));
 
 	const openApps = useAppSelector(state => state.windowManager.openApps);
+	const activeApps = useAppSelector(state => state.desktop.activeDesktopApps);
 	const background = useAppSelector(state => state.settings.background);
 	const taskbarHeight = useAppSelector(state => state.settings.taskbarHeight);
 	const iconScale = useAppSelector(state => state.settings.iconScale);
 	const taskbarHideRate = useAppSelector(state => state.taskbar.hideRate);
-	const taskbarForceShow = useAppSelector(state => state.taskbar.forceShow);
 	const [showingTaskbar, setShowingTaskbar] = useState(false);
 	const [columnHeight, setColumnHeight] = useState<number>(-1);
 	const [isSelecting, setIsSelecting] = useState<boolean>(false);
@@ -70,7 +78,9 @@ export default function Desktop() {
 
 	const onContextMenu = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
 		event.preventDefault();
-	}, []);
+		// TODO: allow changing background.
+		dispatch(changeDesktopBackground(background));
+	}, [background, dispatch]);
 
 	const onDragStart = useCallback((event: React.DragEvent<HTMLDivElement>) => {
 		if (event.button === 0) {
@@ -81,21 +91,38 @@ export default function Desktop() {
 		}
 	}, [dispatch]);
 
+	const cursorY = useRef(0);
+
 	const onMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+		cursorY.current = event.clientY;
+
 		if (isSelecting) {
 			setSelectionXEnd(event.clientX);
 			setSelectionYEnd(event.clientY);
 		}
-		if (taskbarHideRate > 0 && !showingTaskbar && event.clientY >= window.innerHeight - 1) {
+		if (taskbarHideRate > 0 && !showingTaskbar && cursorY.current >= window.innerHeight - 1) {
 			setShowingTaskbar(true);
-			dispatch(showTaskbar());
-		} else if (showingTaskbar && event.clientY < window.innerHeight - taskbarHeight) {
+		} else if (showingTaskbar && cursorY.current < window.innerHeight - taskbarHeight) {
 			setShowingTaskbar(false);
 			dispatch(cancelShowTaskbar());
 		}
 	}, [dispatch, isSelecting, showingTaskbar, taskbarHeight, taskbarHideRate]);
 
-	const onDragEnd = useCallback((event: React.DragEvent<HTMLDivElement>) => {
+	useEffect(() => {
+		if (!showingTaskbar)
+			return;
+		const timer = setTimeout(() => {
+			if (cursorY.current >= window.innerHeight - 1)
+				dispatch(showTaskbar());
+
+			else
+				setShowingTaskbar(false);
+		}, 500);
+
+		return () => clearTimeout(timer);
+	}, [dispatch, showingTaskbar]);
+
+	const onDragEnd = useCallback(() => {
 		if (isSelecting && selectionXStart !== -1 && selectionXEnd !== -1 && selectionYStart !== -1 && selectionYEnd !== -1) {
 			dispatch(setActiveDesktopApps(getAppsInSelectionBox()));
 			setSelectionXStart(-1);
@@ -112,7 +139,7 @@ export default function Desktop() {
 			// Left Click
 			case 0:
 				if (isSelecting)
-					onDragEnd(event as React.DragEvent<HTMLDivElement>);
+					onDragEnd();
 				break;
 
 			// Right Click
@@ -127,16 +154,19 @@ export default function Desktop() {
 		setColumnHeight(desktopHeight / (iconScale + 50) - 1);
 	}, [iconScale, taskbarHeight]);
 
-	useEffect(() => {
-		for (const app of appRegistry.apps) {
-			dispatch(addDesktopApp(app.app.getProps().appFile));
-		}
-	}, [dispatch]);
-
 	const showApp = useCallback((id: number) => {
 		const app = appRegistry.getClass(id);
 		if (app) {
-			return <OSAppWindow key={id + 0.1} app={app} />;
+			const position = getSetting('windowPrefs' + app.getAppProps().appFile.id)?.position ?? undefined;
+			const height = getSetting('windowPrefs' + app.getAppProps().appFile.id)?.height ?? undefined;
+			const width = getSetting('windowPrefs' + app.getAppProps().appFile.id)?.width ?? undefined;
+			const props: AppWindowProps = {
+				x: position?.x ?? undefined,
+				y: position?.y ?? undefined,
+				height: height,
+				width: width,
+			};
+			return <OSAppWindow props={props} key={id + 0.1} app={app} />;
 		}
 	}, []);
 
@@ -170,20 +200,40 @@ export default function Desktop() {
 					width: 0,
 				}}
 			>
-				{apps.map((app, i) => (
-					<OSAppFile
+				{apps.map((app, i) => {
+					const appSelect = activeApps.some(cApp => cApp.id === app.id);
+					return <OSAppFile
 						key={app.id}
 						props={app}
 						onMenu={() => {
 
 						}}
+						onClick={event => {
+							if (event.ctrlKey) {
+								if (!appSelect) dispatch(addActiveDesktopApp(app));
+								else dispatch(removeActiveDesktopApp(app));
+							} else if (appSelect) {
+								// Placeholder: rename logic could go here
+							} else {
+								dispatch(clearActiveDesktopApps());
+								dispatch(addActiveDesktopApp(app));
+							}
+						}}
+						onDoubleClick={() => {
+							for (const app of activeApps) {
+								dispatch(clearActiveDesktopApps());
+								dispatch(launchApp(app.id));
+							}
+						}}
+						isActive={appSelect}
 						ref={el => {
 							if (el) itemRefs.current[i] = el;
-						}} />
-				))}
+						}} />;
+				})}
 			</div>
 		}
 		<Taskbar />
+		<AppLauncher />
 		{openApps.map(app => showApp(app.pid))}
 	</div>;
 }

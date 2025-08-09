@@ -3,7 +3,7 @@
 
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import Image from 'next/image';
-import { closeApp, launchApp } from '@/lib/features/windowManager/windowManagerSlice';
+import { closeApp, launchApp, toggleAppLauncher } from '@/lib/features/windowManager/windowManagerSlice';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { OSAppFileProps } from '@/lib/features/OSApp/OSAppFile';
 import { pinTaskbarApp, unpinTaskbarApp } from '@/lib/features/taskbar/taskbarSlice';
@@ -18,6 +18,8 @@ export default function Taskbar() {
 	const hideRate = useAppSelector(state => state.taskbar.hideRate);
 	const forceShow = useAppSelector(state => state.taskbar.forceShow);
 
+	const dispatch = useAppDispatch();
+
 	// Determine currently focused app from window manager instances
 	useEffect(() => {
 		setFocusedAppId(undefined);
@@ -30,7 +32,7 @@ export default function Taskbar() {
 	}, [openedAppsInstances]);
 
 	return <div
-		className="absolute w-full z-10000 px-10 pb-8 flex items-center justify-center transition-all duration-300"
+		className="absolute w-full px-10 pb-8 flex items-center justify-center transition-all duration-300"
 		style={{
 			height: taskbarHeight,
 			bottom: hideRate > 0 && !forceShow ? -taskbarHeight : 0,
@@ -48,6 +50,7 @@ export default function Taskbar() {
 			flex
 			flex-row
 			px-1
+			z-20000
 			before:rounded-2xl
 			before:bg-[#ffffff90]
 			before:absolute
@@ -58,13 +61,27 @@ export default function Taskbar() {
 			before:-z-1
 			"
 		>
-			<div className="group cursor-pointer">
+			<div className="group cursor-pointer"
+					 onClick={() => {
+						 dispatch(toggleAppLauncher());
+					 }}>
 				<div
-					className="transition-transform duration-100 group-hover:-translate-y-1.5 relative flex-col flex items-center"
+					className={`
+						transition-transform 
+						duration-100 
+						group-hover:-translate-y-1.5 
+						relative 
+						flex 
+						flex-col 
+						items-center
+					`}
 				>
 					<Image
 						draggable={false}
-						className="cursor-pointer" src="/icons/app-launcher.png" alt="" width={taskbarHeight - 35}
+						className="cursor-pointer"
+						src="/icons/app-launcher.png"
+						alt=""
+						width={taskbarHeight - 35}
 						height={taskbarHeight - 35}
 					/>
 				</div>
@@ -83,6 +100,16 @@ export default function Taskbar() {
 	</div>;
 }
 
+const FocusBar = ({ isFocused }: { isFocused: boolean }) => {
+	return <div
+		className="absolute w-2/5 h-1 top-[1px] rounded-full transition-colors border-[1] duration-400"
+		style={{
+			backgroundColor: isFocused ? '#222222FF' : '#FFFFFFFF',
+			borderColor: isFocused ? '#FFFFFFFF' : '#222222FF',
+		}}
+	/>;
+};
+
 const TaskbarIcon = (props: {
 	app: OSAppFileProps,
 	focusedAppId?: number,
@@ -92,6 +119,7 @@ const TaskbarIcon = (props: {
 	const dispatch = useAppDispatch();
 	const taskbarHeight = useAppSelector(state => state.settings.taskbarHeight);
 	const divRef = useRef<HTMLDivElement>(null);
+	const isAppLauncherPresent = useAppSelector(state => state.windowManager.isAppLauncherPresent);
 
 	const onMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
 		if (e.button === 2) {
@@ -136,27 +164,27 @@ const TaskbarIcon = (props: {
 		<div className="group cursor-pointer"
 				 ref={divRef}
 				 onContextMenu={onMenu}
+				 onClick={() => {
+					 if (isAppLauncherPresent)
+						 dispatch(toggleAppLauncher());
+					 dispatch(launchApp(props.app.id));
+				 }}
 		>
 			<div
-				className="transition-transform duration-100 group-hover:-translate-y-1.5 relative flex-col flex items-center"
+				className="transition-transform duration-100 group-hover:-translate-y-1.5 relative flex-col flex items-center justify-center"
+				style={{
+					width: taskbarHeight - 35,
+					height: taskbarHeight - 35,
+				}}
 			>
 				<Image
 					draggable={false}
 					src={props.app.icon}
 					alt=""
-					width={taskbarHeight - 35}
-					height={taskbarHeight - 35}
-					onClick={() => {
-						dispatch(launchApp(props.app.id));
-					}}
+					width={taskbarHeight - 45}
+					height={taskbarHeight - 45}
 				/>
-				<div
-					className="absolute w-2/5 h-1 top-[1px] rounded-full transition-colors border-[1] duration-400"
-					style={{
-						backgroundColor: props.focusedAppId === props.app.id ? '#222222FF' : '#FFFFFFFF',
-						borderColor: props.focusedAppId === props.app.id ? '#FFFFFFFF' : '#222222FF',
-					}}
-				/>
+				<FocusBar isFocused={props.focusedAppId === props.app.id} />
 			</div>
 		</div>
 	</div>;
@@ -172,6 +200,7 @@ const PinnedTaskbarIcon = (props: {
 	const taskbarHeight = useAppSelector(state => state.settings.taskbarHeight);
 	const divRef = useRef<HTMLDivElement>(null);
 	const openApps = useAppSelector(state => state.windowManager.openApps);
+	const isAppLauncherPresent = useAppSelector(state => state.windowManager.isAppLauncherPresent);
 
 	const onMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
 		if (e.button === 2) {
@@ -220,24 +249,27 @@ const PinnedTaskbarIcon = (props: {
 				 onContextMenu={onMenu}
 		>
 			<div
-				className="transition-transform duration-100 group-hover:-translate-y-1.5 relative flex-col flex items-center"
+				className="transition-transform duration-100 group-hover:-translate-y-1.5 relative flex-col flex items-center justify-center"
+				style={{
+					width: taskbarHeight - 35,
+					height: taskbarHeight - 35,
+				}}
 			>
 				<Image
 					draggable={false}
 					className="cursor-pointer"
 					src={props.app.icon}
 					alt=""
-					width={taskbarHeight - 35}
-					height={taskbarHeight - 35}
+					width={taskbarHeight - 45}
+					height={taskbarHeight - 45}
 					onClick={() => {
+						if (isAppLauncherPresent)
+							dispatch(toggleAppLauncher());
 						dispatch(launchApp(props.app.id));
 					}}
 				/>
 				{openApps.some(cApp => cApp.pid === props.app.id) &&
-					<div
-						className="absolute w-2/5 h-1 top-[1px] rounded-full transition-colors duration-400"
-						style={{ backgroundColor: props.focusedAppId === props.app.id ? '#000000A0' : '#FFFFFFA0' }}>
-					</div>
+					<FocusBar isFocused={props.focusedAppId === props.app.id} />
 				}
 			</div>
 		</div>

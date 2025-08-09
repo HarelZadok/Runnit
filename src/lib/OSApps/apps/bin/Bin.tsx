@@ -1,16 +1,20 @@
-import { OSApp } from '@/lib/features/OSApp/OSApp';
+import OSApp from '@/lib/features/OSApp/OSApp';
 import React from 'react';
-import appRegistry from '@/lib/OSApps/AppRegistry';
 
 export default class Bin extends OSApp {
 	constructor() {
-		super(0, 'Recycle Bin', '/icons/bin.png');
-		appRegistry.registerApp(this);
+		super();
+
+		this.appFile = {
+			id: OSApp.appCount++,
+			name: 'Recycle Bin',
+			icon: '/icons/bin.png',
+		};
 	}
 
-	render(): React.ReactElement {
+	body(): React.ReactElement {
 		return <div className="text-black w-full h-full bg-white flex justify-center items-center">
-			<p>RECYCLE BIN!</p>
+			<p>Recycle Bin!</p>
 		</div>;
 	}
 }

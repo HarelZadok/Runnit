@@ -4,6 +4,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { OSAppFileProps } from '@/lib/features/OSApp/OSAppFile';
+import { getSetting, setSetting } from '@/lib/functions';
 
 export interface taskbarState {
 	pinnedTaskbarApps: OSAppFileProps[];
@@ -13,7 +14,7 @@ export interface taskbarState {
 }
 
 const initialState: taskbarState = {
-	pinnedTaskbarApps: [],
+	pinnedTaskbarApps: getSetting('pinnedTaskbarApps') ?? [],
 	openedTaskbarApps: [],
 	hideRate: 0,
 	forceShow: false,
@@ -25,9 +26,11 @@ const taskbarSlice = createSlice({
 	reducers: {
 		pinTaskbarApp: (state, app: PayloadAction<OSAppFileProps>) => {
 			state.pinnedTaskbarApps.push(app.payload);
+			setSetting('pinnedTaskbarApps', state.pinnedTaskbarApps);
 		},
 		unpinTaskbarApp: (state, app: PayloadAction<OSAppFileProps>) => {
 			state.pinnedTaskbarApps = state.pinnedTaskbarApps.filter(cApp => cApp.id !== app.payload.id);
+			setSetting('pinnedTaskbarApps', state.pinnedTaskbarApps);
 		},
 		addOpenTaskbarApp: (state, app: PayloadAction<OSAppFileProps>) => {
 			state.openedTaskbarApps.push(app.payload);

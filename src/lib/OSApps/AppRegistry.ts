@@ -1,4 +1,4 @@
-import { OSApp } from '@/lib/features/OSApp/OSApp';
+import OSApp from '@/lib/features/OSApp/OSApp';
 
 export interface AppRegister {
 	id: number,

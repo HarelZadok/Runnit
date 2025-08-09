@@ -1,7 +1,7 @@
 // OSAppFile.tsx: Represents a desktop icon for an application, handles selection and launching on double-click
 'use client';
 
-import { useAppSelector, useAppDispatch } from '@/lib/hooks'; // Typed Redux hooks
+import { useAppSelector } from '@/lib/hooks'; // Typed Redux hooks
 import Image from 'next/image';
 import React, { forwardRef, useCallback, useEffect, useState } from 'react';
 import {
@@ -10,6 +10,8 @@ import {
 	removeActiveDesktopApp,
 } from '@/lib/features/dekstop/desktopSlice';
 import { launchApp } from '@/lib/features/windowManager/windowManagerSlice';
+import { Property } from 'csstype';
+import TextDecorationColor = Property.TextDecorationColor;
 
 export interface OSAppFileProps {
 	id: number;
@@ -20,37 +22,31 @@ export interface OSAppFileProps {
 export interface AdvancedOSAppFileProps {
 	props: OSAppFileProps;
 	onMenu?: () => void;
+	onDoubleClick?: () => void;
+	onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
+	isActive?: boolean;
+	textColor?: TextDecorationColor;
+	width?: number,
+	height?: number,
 }
 
 export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>((props, ref) => {
 	// Retrieve icon scale from settings
 	const iconScale = useAppSelector(state => state.settings.iconScale);
-	const dispatch = useAppDispatch();
-	// Track selection state based on Redux activeApps
-	const activeApps = useAppSelector(state => state.desktop.activeDesktopApps);
-	const [appSelect, setAppSelect] = useState(false);
 
 	// Toggle selection on click; support ctrl-click for multi-selection
 	const onClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
 		event.stopPropagation();
-		if (event.ctrlKey) {
-			if (!appSelect) dispatch(addActiveDesktopApp(props.props));
-			else dispatch(removeActiveDesktopApp(props.props));
-		} else if (appSelect) {
-			// Placeholder: rename logic could go here
-		} else {
-			dispatch(clearActiveDesktopApps());
-			dispatch(addActiveDesktopApp(props.props));
-		}
-	}, [appSelect, dispatch, props]);
+		if (props.onClick)
+			props.onClick(event);
+	}, [props]);
 
-	// Launch app on double click
-	const runApp = useCallback(() => {
-		for (const app of activeApps) {
-			dispatch(clearActiveDesktopApps());
-			dispatch(launchApp(app.id));
-		}
-	}, [activeApps, dispatch]);
+	const onMenu = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+		event.stopPropagation();
+		event.preventDefault();
+		if (props.onMenu)
+			props.onMenu();
+	}, [props]);
 
 	// Prevent unintended drag behavior
 	const onDragStart = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
@@ -58,30 +54,34 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>((pro
 		event.preventDefault();
 	}, []);
 
-	// Update visual selection when Redux activeApps changes
-	useEffect(() => {
-		setAppSelect(activeApps.some(app => app.id === props.props.id));
-	}, [activeApps, props.props.id]);
-
 	return <div
-		className="flex flex-col justify-center items-center break-inside-avoid select-none hover:bg-[#ffffff30] rounded-md"
+		className={`flex flex-col justify-center items-center select-none hover:bg-[#77777730] rounded-md hover:backdrop-brightness-150`}
 		onClick={onClick}
-		onDoubleClick={runApp}
+		onDoubleClick={props.onDoubleClick}
 		onMouseDown={onDragStart}
-		onContextMenu={props.onMenu}
+		onContextMenu={onMenu}
 		ref={ref}
 		data-id={props.props.id}
 		title={props.props.name}
 		style={{
-			height: iconScale + 50,
-			width: iconScale + 10,
-			backgroundColor: appSelect ? '#ffffff30' : undefined,
-			border: appSelect ? '1px solid' : undefined,
+			height: iconScale + (props.height ?? 50),
+			width: iconScale + (props.width ?? 10),
+			backgroundColor: props.isActive ? '#ffffff30' : undefined,
+			border: props.isActive ? '1px solid' : undefined,
 		}}
 	>
 		<Image width={iconScale} height={iconScale} src={props.props.icon} alt="" />
 		<p
-			className="text-center break-words line-clamp-2">{props.props.name}</p>
+			className="text-center break-inside-avoid line-clamp-2"
+			style={{
+				color: props.textColor ?? 'white',
+				wordBreak: 'break-word',
+				overflowWrap: 'anywhere',
+			}}
+			dangerouslySetInnerHTML={{
+				__html: props.props.name.replace(/\.([^.]+)$/, '<wbr>.$1'),
+			}}
+		/>
 	</div>;
 });
 

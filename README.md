@@ -10,7 +10,7 @@ experience on the web.
 - Advanced window manager: open multiple resizable, movable, minimizable, and maximizable windows with snap support
 - Built-in OS apps:
     - Bin: restore or permanently delete files
-    - Explorer: navigate and manage a mock file system
+    - Files: navigate and manage a mock file system
 - Settings panel: adjust preferences like theme, wallpaper, and keyboard shortcuts
 - Modular OSApp framework: easily add or remove apps with isolated state and icons
 - Global state management using Redux Toolkit for predictable, easy-to-debug updates
@@ -24,7 +24,7 @@ experience on the web.
 4. Click and drag window title bars to move windows; drag edges or corners to resize
 5. Minimize, maximize, or close windows via the title bar controls
 6. Right-click on the desktop to open the context menu for wallpaper settings and refreshing
-7. Browse files in the Explorer app; deleted items are sent to the Bin for recovery or permanent removal
+7. Browse files in the Files app; deleted items are sent to the Bin for recovery or permanent removal
 8. Open the Settings app from the taskbar to customize themes, wallpapers, and shortcuts
 
 ## Repository Structure

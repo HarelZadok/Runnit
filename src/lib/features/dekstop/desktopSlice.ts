@@ -2,6 +2,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { OSAppFileProps } from '@/lib/features/OSApp/OSAppFile';
+import { getSetting, setSetting } from '@/lib/functions';
 
 export interface desktopState {
 	desktopApps: OSAppFileProps[];
@@ -9,7 +10,7 @@ export interface desktopState {
 }
 
 const initialState: desktopState = {
-	desktopApps: [],
+	desktopApps: getSetting('desktopApps') ?? [],
 	activeDesktopApps: [],
 };
 
@@ -19,13 +20,18 @@ export const desktopSlice = createSlice({
 	reducers: {
 		addDesktopApp: (state, action: PayloadAction<OSAppFileProps>) => {
 			state.desktopApps.push(action.payload);
+			setSetting('desktopApps', state.desktopApps);
 		},
 		removeDesktopApp: (state, action: PayloadAction<OSAppFileProps>) => {
 			state.desktopApps = state.desktopApps.filter(app => app.id != action.payload.id);
+			setSetting('desktopApps', state.desktopApps);
 		},
 		renameDesktopApp: (state, action: PayloadAction<[number, string]>) => {
 			const i = state.desktopApps.findIndex((app) => app.id === action.payload[0]);
-			if (i !== -1) state.desktopApps[i].name = action.payload[1];
+			if (i !== -1) {
+				state.desktopApps[i].name = action.payload[1];
+				setSetting('desktopApps', state.desktopApps);
+			}
 		},
 		clearActiveDesktopApps: (state) => {
 			state.activeDesktopApps = [];

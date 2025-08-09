@@ -1,4 +1,6 @@
-import React, { ReactElement } from 'react';
+'use client';
+
+import React, { cloneElement, Component, ReactElement } from 'react';
 import { OSAppFileProps } from '@/lib/features/OSApp/OSAppFile';
 import { RiCloseLargeLine } from 'react-icons/ri';
 import { FiMaximize } from 'react-icons/fi';
@@ -9,32 +11,29 @@ import Image from 'next/image';
 export interface OSAppProps {
 	appFile: OSAppFileProps;
 	header: () => ReactElement;
-	render: () => ReactElement;
-	window: () => ReactElement;
+	body: () => ReactElement;
 	defaultWidth: number;
 	defaultHeight: number;
 }
 
 type Sides = 'north' | 'south' | 'east' | 'west';
 
-export abstract class OSApp implements OSAppProps {
-	// appFile stores basic info (id, name, icon) passed to desktop and taskbar
-	public appFile: OSAppFileProps;
-
+export default abstract class OSApp extends Component implements OSAppProps {
+	public static appCount = 0;
 	// Default properties
 	public readonly defaultWidth: number;
 	public readonly defaultHeight: number;
-	public readonly minimumWidth: number;
-	public readonly minimumHeight: number;
+	public minimumWidth: number;
+	public minimumHeight: number;
+	// appFile stores basic info (id, name, icon) passed to desktop and taskbar
+	public appFile: OSAppFileProps;
 	private readonly headerHeight: number;
-
 	// Variables
 	private isResizing = false;
 	private northResize = false;
 	private southResize = false;
 	private eastResize = false;
 	private westResize = false;
-
 	// Internal drag state and lifecycle callbacks
 	private onGrab: ((event: React.DragEvent<HTMLDivElement>) => void) | undefined;
 	private onGrabbing: ((event: MouseEvent) => void) | undefined;
@@ -48,16 +47,19 @@ export abstract class OSApp implements OSAppProps {
 	private onResizing: ((event: MouseEvent, sides: Sides[]) => void) | undefined;
 	private onResizeEnd: ((event: MouseEvent, sides: Sides[]) => void) | undefined;
 	private onClose: (() => void) | undefined;
+	private headerTrailingItems: ReactElement[];
 
+	protected constructor() {
+		super();
 
-	protected constructor(id: number, name: string, icon: string) {
 		// Initialize app metadata and default window size
 		this.appFile = {
-			id: id,
-			name: name,
-			icon: icon,
+			id: -1,
+			name: '',
+			icon: '',
 		};
 
+		this.headerTrailingItems = [];
 		this.defaultWidth = 1100;
 		this.defaultHeight = 700;
 		this.minimumWidth = 450;
@@ -101,6 +103,20 @@ export abstract class OSApp implements OSAppProps {
 		this.onResizeEnd = callback;
 	};
 
+	setMaximize = (maximize: boolean) => {
+		if (this.onMaximize && this.isMaximized !== maximize) {
+			this.onMaximize();
+			this.isMaximized = maximize;
+		}
+	};
+
+	setMinimize = (minimize: boolean) => {
+		if (this.onMinimize && this.isMinimized !== minimize) {
+			this.onMinimize();
+			this.isMinimized = minimize;
+		}
+	};
+
 	header(): ReactElement {
 		return <div
 			className="flex flex-row justify-between items-center bg-[#252525B4] text-white"
@@ -110,50 +126,50 @@ export abstract class OSApp implements OSAppProps {
 				draggable
 				// onContextMenu={onContextMenu}
 				onDragStart={this.mOnGrabStart}
-				onDoubleClick={e => {
-					this.isMaximized = !this.isMaximized;
-					if (this.onMaximize) this.onMaximize();
+				onDoubleClick={() => {
+					this.setMaximize(!this.isMaximized);
 				}}
 				className="w-full h-full flex flex-row items-center px-2 gap-2"
 			>
 				<Image src={this.appFile.icon} alt="" width={20} height={20} />
 				<small>{this.appFile.name}</small>
 			</div>
-			<div className="h-full flex flex-row cursor-pointer">
-				<div className="hover:bg-gray-300 text-gray-300 hover:text-black h-full w-8 flex justify-center items-center"
-						 onClick={() => {
-							 this.isMinimized = !this.isMinimized;
-							 if (this.onMinimize) this.onMinimize();
-						 }}>
+			<div className="h-full flex flex-row">
+				{this.headerTrailingItems.map((item, i) => cloneElement(item, { key: i }))}
+				<div
+					className="hover:bg-gray-300 text-gray-300 hover:text-black h-full w-8 flex justify-center items-center cursor-pointer"
+					onClick={() => {
+						this.setMinimize(!this.isMinimized);
+					}}>
 					<IoIosArrowDown />
 				</div>
 				<div
-					className="hover:bg-yellow-500 text-yellow-500 hover:text-black h-full w-8 flex justify-center items-center"
+					className="hover:bg-yellow-500 text-yellow-500 hover:text-black h-full w-8 flex justify-center items-center cursor-pointer"
 					onClick={() => {
-						this.isMaximized = !this.isMaximized;
-						if (this.onMaximize) this.onMaximize();
+						this.setMaximize(!this.isMaximized);
 					}}>
 					<FiMaximize />
 				</div>
-				<div className="hover:bg-red-500 text-red-500 hover:text-black h-full w-8 flex justify-center items-center"
-						 onClick={() => {
-							 if (this.onClose)
-								 this.onClose();
-						 }}>
+				<div
+					className="hover:bg-red-500 text-red-500 hover:text-black h-full w-8 flex justify-center items-center cursor-pointer"
+					onClick={() => {
+						if (this.onClose)
+							this.onClose();
+					}}>
 					<RiCloseLargeLine />
 				</div>
 			</div>
 		</div>;
 	};
 
-	render(): ReactElement {
+	body(): ReactElement {
 		return <div onMouseDown={e => e.stopPropagation()}
 								className="bg-white flex flex-col justify-center items-center w-full h-full">
-			<p className="text-black">Override {this.constructor.name}.render() to update the app.</p>
+			<p className="text-black">Override {this.constructor.name}.body() to update the app.</p>
 		</div>;
 	};
 
-	window(): ReactElement {
+	render() {
 		return <div className="w-full h-full"
 								style={{ width: '100%', height: `calc(100% - ${this.headerHeight}px)` }}>
 			<div
@@ -381,20 +397,23 @@ export abstract class OSApp implements OSAppProps {
 				}}
 			/>
 			{this.header()}
-			{this.render()}
+			{this.body()}
 		</div>;
 	}
 
-	getProps(): OSAppProps {
+	getAppProps(): OSAppProps {
 		return {
 			appFile: this.appFile,
 			header: this.header,
-			render: this.render,
-			window: this.window,
+			body: this.body,
 			defaultWidth: this.defaultWidth,
 			defaultHeight: this.defaultHeight,
 		};
 	}
+
+	protected addHeaderTrailingItem = (headerItem: ReactElement) => {
+		this.headerTrailingItems.push(headerItem);
+	};
 
 	protected mOnGrabStart = (event: React.DragEvent<HTMLDivElement>) => {
 		// Begin drag, invoke external handler if provided

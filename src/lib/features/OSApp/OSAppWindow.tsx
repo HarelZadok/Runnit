@@ -1,7 +1,7 @@
 // OSAppWindow.tsx: Renders a resizable, draggable window for a given OSApp instance, integrates with windowManager state
 'use client';
 
-import { OSApp } from '@/lib/features/OSApp/OSApp';
+import OSApp from '@/lib/features/OSApp/OSApp';
 import React, { useEffect, useState, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import {
@@ -17,6 +17,7 @@ import {
 	unmaximizeApp,
 	unminimizeApp,
 } from '@/lib/features/windowManager/windowManagerSlice';
+import { getSetting, setSetting } from '@/lib/functions';
 
 export interface AppWindowProps {
 	width?: number;
@@ -36,7 +37,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
 	// Retrieve size and position settings from Redux
 	const taskbarHeight = useAppSelector(state => state.settings.taskbarHeight);
 	const instance = useAppSelector(state => state.windowManager.openApps)
-		.find(cApp => cApp.pid === app.appFile.id)!;
+		.find(cApp => cApp.pid === app.getAppProps().appFile.id)!;
 	const maximized = instance.isMaximized;
 	const minimized = instance.isMinimized;
 	const zIndex = instance.zIndex;
@@ -55,12 +56,22 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
 	const windowRef = useRef<HTMLDivElement>(null);
 	const [isHidingTaskbar, setIsHidingTaskbar] = useState(false);
 
+	const appRef = useRef<OSApp>(null);
+	const AppComponent = app.constructor as React.ComponentClass<object, object>;
+
+	const hasTriggeredHideRef = useRef(false);
+
 	useEffect(() => {
 		const bottom = position.y + height;
-		if ((window.innerHeight - bottom <= taskbarHeight || maximized) && !minimized && !isHidingTaskbar) {
+		const shouldHide = (window.innerHeight - bottom <= taskbarHeight || maximized) && !minimized;
+
+		if (shouldHide && !isHidingTaskbar && !hasTriggeredHideRef.current) {
+			console.log(isHidingTaskbar);
+			hasTriggeredHideRef.current = true;
 			setIsHidingTaskbar(true);
 			dispatch(incrementHideRate());
-		} else if (((window.innerHeight - bottom > taskbarHeight && !maximized) || minimized) && isHidingTaskbar) {
+		} else if (!shouldHide && isHidingTaskbar) {
+			hasTriggeredHideRef.current = false;
 			setIsHidingTaskbar(false);
 			dispatch(decrementHideRate());
 		}
@@ -68,12 +79,12 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
 
 	// Register window in taskbar on mount and cleanup on unmount
 	useEffect(() => {
-		dispatch(addOpenTaskbarApp(app.appFile));
+		dispatch(addOpenTaskbarApp(app.getAppProps().appFile));
 
 		return () => {
-			dispatch(removeOpenTaskbarApp(app.appFile));
+			dispatch(removeOpenTaskbarApp(app.getAppProps().appFile));
 		};
-	}, [app.appFile, dispatch]);
+	}, [app, dispatch]);
 
 	useEffect(() => {
 		return () => {
@@ -83,13 +94,26 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
 		};
 	}, [dispatch, isHidingTaskbar]);
 
+	useEffect(() => {
+		const newPrefs = {
+			...getSetting('windowPrefs' + app.getAppProps().appFile.id),
+			width: width,
+			height: height,
+			position: position,
+		};
+		setSetting('windowPrefs' + app.getAppProps().appFile.id, newPrefs);
+	}, [width, height, position, app]);
+
 	// Setup drag, maximize, minimize, and close handlers on the OSApp instance
 	useEffect(() => {
+		const instance = appRef.current;
+		if (!instance) return;
+
 		// Drag start: capture initial mouse
-		app.setOnGrabStart(e => {
+		instance.setOnGrabStart(e => {
 			setIsGrabbing(true);
 			if (maximized) {
-				dispatch(unmaximizeApp(app.appFile.id));
+				dispatch(unmaximizeApp(app.getAppProps().appFile.id));
 				setPosition({
 					x: e.clientX - width / 2,
 					y: e.clientY - 20,
@@ -98,7 +122,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
 			prevMouseRef.current = { x: e.clientX, y: e.clientY };
 		});
 		// Dragging: update position incrementally
-		app.setOnGrabbing(e => {
+		instance.setOnGrabbing(e => {
 			const deltaX = e.clientX - prevMouseRef.current.x;
 			const deltaY = e.clientY - prevMouseRef.current.y;
 
@@ -106,27 +130,27 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
 			prevMouseRef.current = { x: e.clientX, y: e.clientY };
 		});
 		// Drag end: stop grabbing
-		app.setOnGrabEnd(e => {
+		instance.setOnGrabEnd(e => {
 			setIsGrabbing(false);
 			if (e.clientY <= 5)
-				dispatch(maximizeApp(app.appFile.id));
+				dispatch(maximizeApp(app.getAppProps().appFile.id));
 		});
 		// Maximize toggle
-		app.setOnMaximize(() => {
-			if (!maximized) dispatch(maximizeApp(app.appFile.id)); else dispatch(unmaximizeApp(app.appFile.id));
+		instance.setOnMaximize(() => {
+			if (!maximized) dispatch(maximizeApp(app.getAppProps().appFile.id)); else dispatch(unmaximizeApp(app.getAppProps().appFile.id));
 		});
 		// Minimize toggle
-		app.setOnMinimize(() => {
-			if (!minimized) dispatch(minimizeApp(app.appFile.id)); else dispatch(unminimizeApp(app.appFile.id));
+		instance.setOnMinimize(() => {
+			if (!minimized) dispatch(minimizeApp(app.getAppProps().appFile.id)); else dispatch(unminimizeApp(app.getAppProps().appFile.id));
 		});
 		// Close window
-		app.setOnClose(() => {
-			dispatch(closeApp(app.appFile.id));
+		instance.setOnClose(() => {
+			dispatch(closeApp(app.getAppProps().appFile.id));
 		});
-		app.setOnResizeStart((event, sides) => {
+		instance.setOnResizeStart(() => {
 			setIsResizing(true);
 		});
-		app.setOnResizing((event, sides) => {
+		instance.setOnResizing((event, sides) => {
 			const updateNorth = () => {
 				const deltaY = position.y - event.clientY;
 				setHeight(prev => {
@@ -189,7 +213,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
 				updateWest();
 			}
 		});
-		app.setOnResizeEnd((event, sides) => {
+		instance.setOnResizeEnd(() => {
 			setIsResizing(false);
 		});
 	}, [app, dispatch, height, maximized, minimized, position.x, position.y, width]);
@@ -232,12 +256,12 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
 					e.stopPropagation();
 				}}
 				onMouseDownCapture={e => {
-					dispatch(focusApp(app.appFile.id));
+					dispatch(focusApp(app.getAppProps().appFile.id));
 				}}
 				onMouseEnter={() => setIsMouseOver(true)}
 				onMouseLeave={() => setIsMouseOver(false)}
 			>
-				{app.window()}
+				<AppComponent ref={appRef} />
 			</div>
 		</div>
 	</div>;

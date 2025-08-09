@@ -1,5 +1,6 @@
 // windowManagerSlice.ts: Manages state of open application windows (minimize, maximize, focus, and z-index)
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { getSetting, setSetting } from '@/lib/functions';
 
 export interface appInstance {
 	pid: number,
@@ -12,11 +13,15 @@ export interface appInstance {
 export interface windowManagerState {
 	openApps: appInstance[];  // Active window instances
 	focusZIndex: number;      // Current highest z-index for focus stacking
+	isAppLauncherPresent: boolean;
+	lastUnfocusedApp: number;
 }
 
 const initialState: windowManagerState = {
 	openApps: [],
 	focusZIndex: 1000,
+	isAppLauncherPresent: false,
+	lastUnfocusedApp: -1,
 };
 
 export const windowManagerSlice = createSlice({
@@ -25,6 +30,7 @@ export const windowManagerSlice = createSlice({
 	reducers: {
 		// Launch or focus an app window; increments z-index and handles restore
 		launchApp: (state, action: PayloadAction<number>) => {
+			state.lastUnfocusedApp = -1;
 			state.focusZIndex++;
 			const app = state.openApps.find(app => app.pid === action.payload);
 			state.openApps.map(app => app.isFocused = false);
@@ -35,7 +41,7 @@ export const windowManagerSlice = createSlice({
 			} else state.openApps.push({
 				pid: action.payload,
 				isMinimized: false,
-				isMaximized: false,
+				isMaximized: getSetting('windowPrefs' + action.payload)?.isMaximized ?? false,
 				isFocused: true,
 				zIndex: state.focusZIndex,
 			});
@@ -55,6 +61,11 @@ export const windowManagerSlice = createSlice({
 			const app = state.openApps.find(app => app.pid === action.payload);
 			if (app) {
 				app.isMinimized = true;
+				const newPrefs = {
+					...getSetting('windowPrefs' + action.payload),
+					isMinimized: true,
+				};
+				setSetting('windowPrefs' + action.payload, newPrefs);
 				app.isFocused = false;
 			}
 		},
@@ -65,6 +76,11 @@ export const windowManagerSlice = createSlice({
 			state.openApps.map(app => app.isFocused = false);
 			if (app) {
 				app.isMinimized = false;
+				const newPrefs = {
+					...getSetting('windowPrefs' + action.payload),
+					isMinimized: false,
+				};
+				setSetting('windowPrefs' + action.payload, newPrefs);
 				app.isFocused = true;
 				app.zIndex = state.focusZIndex;
 			}
@@ -72,17 +88,30 @@ export const windowManagerSlice = createSlice({
 		// Maximize the specified window
 		maximizeApp: (state, action: PayloadAction<number>) => {
 			const app = state.openApps.find(app => app.pid === action.payload);
-			if (app)
+			if (app) {
 				app.isMaximized = true;
+				const newPrefs = {
+					...getSetting('windowPrefs' + action.payload),
+					isMaximized: true,
+				};
+				setSetting('windowPrefs' + action.payload, newPrefs);
+			}
 		},
 		// Restore window from maximized state
 		unmaximizeApp: (state, action: PayloadAction<number>) => {
 			const app = state.openApps.find(app => app.pid === action.payload);
-			if (app)
+			if (app) {
 				app.isMaximized = false;
+				const newPrefs = {
+					...getSetting('windowPrefs' + action.payload),
+					isMaximized: false,
+				};
+				setSetting('windowPrefs' + action.payload, newPrefs);
+			}
 		},
 		// Bring an existing window to front (update focus and z-index)
 		focusApp: (state, action: PayloadAction<number>) => {
+			state.lastUnfocusedApp = -1;
 			state.focusZIndex++;
 			state.openApps.map(app => app.isFocused = false);
 			const app = state.openApps.find(app => app.pid === action.payload);
@@ -92,10 +121,17 @@ export const windowManagerSlice = createSlice({
 			}
 		},
 		// Remove focus from the specified window without altering z-index
-		unfocusApp: (state, action: PayloadAction<number>) => {
-			const app = state.openApps.find(app => app.pid === action.payload);
-			if (app)
+		unfocusApp: (state) => {
+			const app = state.openApps.find(app => app.isFocused);
+			if (app) {
 				app.isFocused = false;
+				state.lastUnfocusedApp = app.pid;
+			} else {
+				state.lastUnfocusedApp = -1;
+			}
+		},
+		toggleAppLauncher: (state) => {
+			state.isAppLauncherPresent = !state.isAppLauncherPresent;
 		},
 	},
 });
@@ -109,5 +145,6 @@ export const {
 	unmaximizeApp,
 	focusApp,
 	unfocusApp,
+	toggleAppLauncher,
 } = windowManagerSlice.actions;
 export default windowManagerSlice.reducer;
