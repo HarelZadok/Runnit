@@ -9,8 +9,8 @@ experience on the web.
 - Taskbar with searchable app launcher, running app indicators, and quick access to apps
 - Advanced window manager: open multiple resizable, movable, minimizable, and maximizable windows with snap support
 - Built-in OS apps:
-    - Bin: restore or permanently delete files
-    - Files: navigate and manage a mock file system
+  - Bin: restore or permanently delete files
+  - Files: navigate and manage a mock file system
 - Settings panel: adjust preferences like theme, wallpaper, and keyboard shortcuts
 - Modular OSApp framework: easily add or remove apps with isolated state and icons
 - Global state management using Redux Toolkit for predictable, easy-to-debug updates

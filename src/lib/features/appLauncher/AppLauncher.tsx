@@ -13,6 +13,7 @@ export default function AppLauncher() {
 	const [query, setQuery] = useState('');
 	const [queryApps, setQueryApps] = useState<OSAppFileProps[]>([]);
 	const desktopApps = useAppSelector(state => state.desktop.desktopApps);
+	const [activeIndex, setActiveIndex] = useState(0);
 
 	useEffect(() => {
 		let registeredApps = appRegistry.apps.flatMap(app => app.app.appFile);
@@ -22,11 +23,12 @@ export default function AppLauncher() {
 		setQueryApps(registeredApps);
 	}, [query]);
 
-	const dispatch = useAppDispatch();
+	const dispatch = useAppDispatch()
 
 	useEffect(() => {
-		if (isPresent)
-			setQuery('');
+		if (isPresent) {
+			setQuery('')
+		}
 	}, [isPresent]);
 
 	useEffect(() => {
@@ -83,7 +85,7 @@ export default function AppLauncher() {
 				{queryApps.map((app, i) => (
 					<OSAppFile
 						key={app.id}
-						isActive={i === 0}
+						isActive={i === activeIndex}
 						width={50}
 						textColor="black"
 						props={app}
