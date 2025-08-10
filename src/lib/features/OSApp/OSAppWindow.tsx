@@ -283,7 +283,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
           onMouseDown={(e) => {
             e.stopPropagation();
           }}
-          onMouseDownCapture={(e) => {
+          onMouseDownCapture={() => {
             dispatch(focusApp(app.getAppProps().appFile.id));
           }}
           onMouseEnter={() => setIsMouseOver(true)}

@@ -13,7 +13,7 @@ export default function AppLauncher() {
 	const [query, setQuery] = useState('');
 	const [queryApps, setQueryApps] = useState<OSAppFileProps[]>([]);
 	const desktopApps = useAppSelector(state => state.desktop.desktopApps);
-	const [activeIndex, setActiveIndex] = useState(0);
+	const [activeIndex] = useState(0);
 
 	useEffect(() => {
 		let registeredApps = appRegistry.apps.flatMap(app => app.app.appFile);

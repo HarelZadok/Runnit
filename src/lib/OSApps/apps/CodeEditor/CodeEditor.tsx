@@ -1,5 +1,5 @@
 import OSApp from "@/lib/features/OSApp/OSApp";
-import Editor, { Monaco } from "@monaco-editor/react";
+import Editor from "@monaco-editor/react";
 import { editor } from "monaco-editor";
 import React, { createRef } from "react";
 import { FaPlay } from "react-icons/fa";
@@ -46,10 +46,7 @@ export default class CodeEditor extends OSApp {
     );
   };
 
-  private handleEditorDidMount = (
-    editor: editor.IStandaloneCodeEditor,
-    monaco: Monaco
-  ) => {
+  private handleEditorDidMount = (editor: editor.IStandaloneCodeEditor) => {
     this.editorRef.current = editor;
   };
 }
