@@ -28,6 +28,8 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
   (props, ref) => {
     // Retrieve icon scale from settings
     const iconScale = useAppSelector((state) => state.settings.iconScale);
+    const isTrashFilled =
+      useAppSelector((state) => state.files.trashFiles).length > 0;
 
     // Toggle selection on click; support ctrl-click for multi-selection
     const onClick = useCallback(
@@ -35,7 +37,7 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
         event.stopPropagation();
         if (props.onClick) props.onClick(event);
       },
-      [props]
+      [props],
     );
 
     const onMenu = useCallback(
@@ -44,7 +46,7 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
         event.preventDefault();
         if (props.onMenu) props.onMenu();
       },
-      [props]
+      [props],
     );
 
     // Prevent unintended drag behavior
@@ -53,7 +55,7 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
         event.stopPropagation();
         event.preventDefault();
       },
-      []
+      [],
     );
 
     return (
@@ -76,11 +78,17 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
         <Image
           width={iconScale}
           height={iconScale}
-          src={props.props.icon}
-          alt=''
+          src={
+            props.props.id === 0
+              ? isTrashFilled
+                ? "/icons/trash-full.png"
+                : "/icons/trash-empty.png"
+              : props.props.icon
+          }
+          alt=""
         />
         <p
-          className='text-center break-inside-avoid line-clamp-2'
+          className="text-center break-inside-avoid line-clamp-2"
           style={{
             color: props.textColor ?? "white",
             wordBreak: "break-word",
@@ -92,7 +100,7 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
         />
       </div>
     );
-  }
+  },
 );
 
 OSAppFile.displayName = "OSAppFile";

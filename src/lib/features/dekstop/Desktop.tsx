@@ -30,7 +30,7 @@ export default function Desktop() {
     apps = Array.from({ length: 50 }, (_, i) => ({
       id: i,
       name: "App " + i,
-      icon: "/icons/bin.png",
+      icon: "/icons/trash.png",
     }));
 
   const openApps = useAppSelector((state) => state.windowManager.openApps);
@@ -54,7 +54,7 @@ export default function Desktop() {
     startY: number,
     endX: number,
     endY: number,
-    elements: HTMLElement[]
+    elements: HTMLElement[],
   ): HTMLElement[] {
     const left = Math.min(startX, endX);
     const right = Math.max(startX, endX);
@@ -79,7 +79,7 @@ export default function Desktop() {
       selectionYStart,
       selectionXEnd,
       selectionYEnd,
-      itemRefs.current
+      itemRefs.current,
     );
     const overlappingIds = overlapping.map((el) => Number(el.dataset.id));
     return apps.filter((app) => overlappingIds.includes(app.id));
@@ -91,7 +91,7 @@ export default function Desktop() {
       // TODO: allow changing background.
       dispatch(changeDesktopBackground(background));
     },
-    [background, dispatch]
+    [background, dispatch],
   );
 
   const onDragStart = useCallback(
@@ -103,7 +103,7 @@ export default function Desktop() {
         setIsSelecting(true);
       }
     },
-    [dispatch]
+    [dispatch],
   );
 
   const cursorY = useRef(0);
@@ -130,7 +130,7 @@ export default function Desktop() {
         dispatch(cancelShowTaskbar());
       }
     },
-    [dispatch, isSelecting, showingTaskbar, taskbarHeight, taskbarHideRate]
+    [dispatch, isSelecting, showingTaskbar, taskbarHeight, taskbarHideRate],
   );
 
   useEffect(() => {
@@ -182,7 +182,7 @@ export default function Desktop() {
           break;
       }
     },
-    [isSelecting, onDragEnd]
+    [isSelecting, onDragEnd],
   );
 
   useEffect(() => {
@@ -215,7 +215,7 @@ export default function Desktop() {
 
   return (
     <div
-      className='relative flex flex-col w-screen h-screen bg-cover bg-center overflow-hidden select-none'
+      className="relative flex flex-col w-screen h-screen bg-cover bg-center overflow-hidden select-none"
       style={{ backgroundImage: `url('${background}')` }}
       onMouseUp={handleMouseEvent}
       onContextMenu={onContextMenu}
@@ -228,24 +228,24 @@ export default function Desktop() {
         selectionXEnd >= 0 &&
         selectionYEnd >= 0 && (
           <div
-            className='absolute bg-[#ffffff30] z-40 rounded-md border border-white'
+            className="absolute bg-[#ffffff30] z-40 rounded-md border border-white"
             style={{
               top: Math.min(selectionYEnd, selectionYStart),
               left: Math.min(selectionXEnd, selectionXStart),
               bottom: Math.min(
                 window.innerHeight - selectionYEnd,
-                window.innerHeight - selectionYStart
+                window.innerHeight - selectionYStart,
               ),
               right: Math.min(
                 window.innerWidth - selectionXEnd,
-                window.innerWidth - selectionXStart
+                window.innerWidth - selectionXStart,
               ),
             }}
           ></div>
         )}
       {columnHeight !== -1 && (
         <div
-          className='gap-3 h-full px-1 grid z-10'
+          className="gap-3 h-full px-1 grid z-10"
           style={{
             paddingBottom: taskbarHeight + 30,
             gridAutoFlow: "column",

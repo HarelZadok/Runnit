@@ -24,13 +24,13 @@ export const desktopSlice = createSlice({
     },
     removeDesktopApp: (state, action: PayloadAction<OSAppFileProps>) => {
       state.desktopApps = state.desktopApps.filter(
-        (app) => app.id != action.payload.id
+        (app) => app.id != action.payload.id,
       );
       setSetting("desktopApps", state.desktopApps);
     },
     renameDesktopApp: (state, action: PayloadAction<[number, string]>) => {
       const i = state.desktopApps.findIndex(
-        (app) => app.id === action.payload[0]
+        (app) => app.id === action.payload[0],
       );
       if (i !== -1) {
         state.desktopApps[i].name = action.payload[1];
@@ -48,7 +48,7 @@ export const desktopSlice = createSlice({
     },
     removeActiveDesktopApp: (state, action: PayloadAction<OSAppFileProps>) => {
       state.activeDesktopApps = state.activeDesktopApps.filter(
-        (app) => app.id !== action.payload.id
+        (app) => app.id !== action.payload.id,
       );
     },
   },

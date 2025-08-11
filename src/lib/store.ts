@@ -3,6 +3,7 @@ import desktopReducer from "@/lib/features/dekstop/desktopSlice";
 import settingsReducer from "@/lib/features/settings/settingsSlice";
 import taskbarReducer from "@/lib/features/taskbar/taskbarSlice";
 import windowManagerReducer from "@/lib/features/windowManager/windowManagerSlice";
+import filesReducer from "@/lib/OSApps/apps/files/filesSlice";
 
 export const makeStore = () => {
   return configureStore({
@@ -11,6 +12,7 @@ export const makeStore = () => {
       settings: settingsReducer,
       taskbar: taskbarReducer,
       windowManager: windowManagerReducer,
+      files: filesReducer,
     },
   });
 };

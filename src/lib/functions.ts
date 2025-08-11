@@ -1,5 +1,5 @@
 export function getSetting(keyword: string) {
-  if (typeof window === "undefined") return null;
+  if (!canAccessStorage()) return null;
 
   const jsonData = localStorage.getItem("!." + keyword);
   if (jsonData) return JSON.parse(jsonData);
@@ -7,6 +7,10 @@ export function getSetting(keyword: string) {
 }
 
 export function setSetting(keyword: string, setting: unknown) {
-  if (typeof window === "undefined") return;
+  if (!canAccessStorage()) return;
   localStorage.setItem("!." + keyword, JSON.stringify(setting));
+}
+
+export function canAccessStorage() {
+  return typeof window !== "undefined";
 }

@@ -1,5 +1,5 @@
 export default abstract class FilesItem {
-  private static filesId = 0;
+  private static filesId = 1;
   public id: number;
   public name: string;
   public path: string;
