@@ -9,7 +9,7 @@ export default class Portfolio extends OSApp {
     isLoading: true,
   };
 
-  constructor(props: never) {
+  constructor(props?: never) {
     super(props);
 
     this.setAppFile({

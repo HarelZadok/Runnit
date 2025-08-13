@@ -7,7 +7,7 @@ import { FaPlay } from "react-icons/fa";
 export default class CodeEditor extends OSApp {
   private editorRef = createRef<editor.IStandaloneCodeEditor>();
 
-  constructor(props: never) {
+  constructor(props?: never) {
     super(props);
 
     this.setAppFile({

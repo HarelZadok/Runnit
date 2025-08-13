@@ -4,7 +4,7 @@ import { useAppDispatch } from "@/lib/hooks";
 import { emptyTrash } from "@/lib/OSApps/apps/files/filesSlice";
 
 export default class Trash extends OSApp {
-  constructor(props: never) {
+  constructor(props?: never) {
     super(props);
 
     this.setAppFile({

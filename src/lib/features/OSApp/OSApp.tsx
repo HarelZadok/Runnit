@@ -58,8 +58,8 @@ export default abstract class OSApp
   private onClose: (() => void) | undefined;
   private headerTrailingItems: ReactElement[];
 
-  protected constructor(props: never) {
-    super(props);
+  protected constructor(props?: never) {
+    super(props ?? {});
 
     // Initialize app metadata and default window size
     this.appFile = {

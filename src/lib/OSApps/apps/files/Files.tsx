@@ -12,7 +12,7 @@ export default class Files extends OSApp {
     currentDirectory: "/",
   };
 
-  constructor(props: never) {
+  constructor(props?: never) {
     super(props);
 
     this.setAppFile({
