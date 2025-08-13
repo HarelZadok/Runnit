@@ -8,7 +8,7 @@ import { IoIosArrowDown } from "react-icons/io";
 import Image from "next/image";
 
 // OSApp.tsx: Base class for all OS-style applications, handling window control hooks and metadata
-export interface OSAppProps {
+export interface OSAppInterface {
   appFile: OSAppFileProps;
   header: () => ReactElement;
   body: () => ReactElement;
@@ -18,7 +18,10 @@ export interface OSAppProps {
 
 type Sides = "north" | "south" | "east" | "west";
 
-export default abstract class OSApp extends Component implements OSAppProps {
+export default abstract class OSApp
+  extends Component
+  implements OSAppInterface
+{
   public static appCount = 0;
   // Default properties
   public readonly defaultWidth: number;
@@ -26,7 +29,7 @@ export default abstract class OSApp extends Component implements OSAppProps {
   public minimumWidth: number;
   public minimumHeight: number;
   // appFile stores basic info (id, name, icon) passed to desktop and taskbar
-  private appFile: OSAppFileProps;
+  public appFile: OSAppFileProps;
   private readonly headerHeight: number;
   // Variables
   private isResizing = false;
@@ -55,10 +58,8 @@ export default abstract class OSApp extends Component implements OSAppProps {
   private onClose: (() => void) | undefined;
   private headerTrailingItems: ReactElement[];
 
-  protected constructor() {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    super();
+  protected constructor(props: never) {
+    super(props);
 
     // Initialize app metadata and default window size
     this.appFile = {
@@ -416,12 +417,12 @@ export default abstract class OSApp extends Component implements OSAppProps {
           }}
         />
         {this.header()}
-        {this.body()}
+        <div className="h-full w-full overflow-hidden">{this.body()}</div>
       </div>
     );
   }
 
-  getAppProps(): OSAppProps {
+  getAppProps(): OSAppInterface {
     return {
       appFile: this.appFile,
       header: this.header,

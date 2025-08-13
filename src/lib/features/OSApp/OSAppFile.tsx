@@ -8,7 +8,7 @@ import { Property } from "csstype";
 import TextDecorationColor = Property.TextDecorationColor;
 
 export interface OSAppFileProps {
-  id: number;
+  readonly id: number;
   name: string;
   icon: string;
 }

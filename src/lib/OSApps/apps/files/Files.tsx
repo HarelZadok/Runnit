@@ -12,8 +12,8 @@ export default class Files extends OSApp {
     currentDirectory: "/",
   };
 
-  constructor() {
-    super();
+  constructor(props: never) {
+    super(props);
 
     this.setAppFile({
       name: "Files",

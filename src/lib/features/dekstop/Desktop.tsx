@@ -8,6 +8,7 @@ import {
   addActiveDesktopApp,
   clearActiveDesktopApps,
   removeActiveDesktopApp,
+  removeDesktopApp,
   setActiveDesktopApps,
 } from "@/lib/features/dekstop/desktopSlice";
 import OSAppWindow, { AppWindowProps } from "@/lib/features/OSApp/OSAppWindow";
@@ -212,6 +213,14 @@ export default function Desktop() {
       return <OSAppWindow props={props} key={id + 0.1} app={app} />;
     }
   }, []);
+
+  useEffect(() => {
+    const deletedApps = apps.filter(
+      (app) => !appRegistry.apps.some((cApp) => cApp.id === app.id),
+    );
+
+    deletedApps.map((app) => dispatch(removeDesktopApp(app)));
+  }, [apps, dispatch]);
 
   return (
     <div

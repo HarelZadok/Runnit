@@ -9,8 +9,8 @@ export default class Portfolio extends OSApp {
     isLoading: true,
   };
 
-  constructor() {
-    super();
+  constructor(props: never) {
+    super(props);
 
     this.setAppFile({
       name: "Portfolio",
