@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { canAccessStorage, getSetting, setSetting } from "@/lib/functions";
 import FilesItem, { Folder } from "@/lib/OSApps/apps/files/FilesItem";
+import { AppDispatch } from "@/lib/store";
 
 export interface filesState {
   trashFiles: FilesItem[];
@@ -14,16 +15,14 @@ export const filesSlice = createSlice({
   name: "files",
   initialState,
   reducers: {
-    deleteApp: (
+    deleteItemFile: (
       state,
-      action: PayloadAction<{ item: FilesItem; updatedFolder: Folder }>,
+      action: PayloadAction<{ serItem: string; serUpdatedFolder: string }>,
     ) => {
+      const item: FilesItem = JSON.parse(action.payload.serItem);
       if (canAccessStorage())
-        localStorage.setItem(
-          action.payload.item.path,
-          JSON.stringify(action.payload.updatedFolder),
-        );
-      state.trashFiles.push(action.payload.item);
+        localStorage.setItem(item.path, action.payload.serUpdatedFolder);
+      state.trashFiles.push(item);
       setSetting("trashFiles", state.trashFiles);
     },
     emptyTrash: (state) => {
@@ -33,5 +32,16 @@ export const filesSlice = createSlice({
   },
 });
 
-export const { deleteApp, emptyTrash } = filesSlice.actions;
+export function deleteItem(
+  dispatch: AppDispatch,
+  item: FilesItem,
+  updatedFolder: Folder,
+) {
+  const serItem = JSON.stringify(item);
+  const serUpdatedFolder = JSON.stringify(updatedFolder);
+
+  dispatch(filesSlice.actions.deleteItemFile({ serItem, serUpdatedFolder }));
+}
+
+export const { emptyTrash } = filesSlice.actions;
 export default filesSlice.reducer;

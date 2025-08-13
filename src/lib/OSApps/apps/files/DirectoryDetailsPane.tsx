@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Folder, File } from "@/lib/OSApps/apps/files/FilesItem";
 import { OSAppFile } from "@/lib/features/OSApp/OSAppFile";
 import { useAppDispatch } from "@/lib/hooks";
-import { deleteApp } from "@/lib/OSApps/apps/files/filesSlice";
+import { deleteItem } from "@/lib/OSApps/apps/files/filesSlice";
 
 interface DirectoryDetailsPaneProps {
   directory: string;
@@ -101,12 +101,12 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
               id: item.id,
             }}
             onMenu={() => {
-              const updatedFolder = {
+              const updatedFolder: Folder = {
                 ...folder,
                 items: folder.items.filter((cItem) => cItem.id !== item.id),
               };
               setFolder(updatedFolder);
-              dispatch(deleteApp({ item, updatedFolder }));
+              deleteItem(dispatch, item, updatedFolder);
             }}
           />
         ))}
