@@ -9,8 +9,12 @@ export default async function Home() {
 
   if (mobileCheck)
     return (
-      <div className="h-screen w-screen flex justify-center items-center">
-        <p>Mobile view is not available for the OS currently.</p>
+      <div className="h-screen w-screen flex flex-col justify-center items-center">
+        <h1 className="text-3xl font-bold">We&apos;re sorry!</h1>
+        <br />
+        <h2 className="text-xl text-center">
+          Mobile view is not available for the OS currently.
+        </h2>
       </div>
     );
 
