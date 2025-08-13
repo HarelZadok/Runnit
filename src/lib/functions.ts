@@ -14,3 +14,7 @@ export function setSetting(keyword: string, setting: unknown) {
 export function canAccessStorage() {
   return typeof window !== "undefined";
 }
+
+export const isMobile = (userAgent: string): boolean => {
+  return /android.+mobile|ip(hone|[oa]d)/i.test(userAgent);
+};
