@@ -1,4 +1,4 @@
-import OSApp from "@/lib/features/OSApp/OSApp";
+import OSApp, { OSAppProps } from "@/lib/features/OSApp/OSApp";
 import Editor from "@monaco-editor/react";
 import { editor } from "monaco-editor";
 import React, { createRef } from "react";
@@ -7,7 +7,7 @@ import { FaPlay } from "react-icons/fa";
 export default class CodeEditor extends OSApp {
   private editorRef = createRef<editor.IStandaloneCodeEditor>();
 
-  constructor(props?: never) {
+  constructor(props?: OSAppProps) {
     super(props);
 
     this.setAppFile({
@@ -25,6 +25,7 @@ export default class CodeEditor extends OSApp {
           width="100%"
           height="100%"
           defaultLanguage="typescript"
+          defaultValue={this.args[0] ?? ""}
           onMount={this.handleEditorDidMount}
         />
       </div>

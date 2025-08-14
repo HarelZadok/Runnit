@@ -3,9 +3,10 @@
 
 import { useAppSelector } from "@/lib/hooks"; // Typed Redux hooks
 import Image from "next/image";
-import React, { forwardRef, useCallback } from "react";
+import React, { forwardRef, useCallback, useState, useEffect } from "react";
 import { Property } from "csstype";
 import TextDecorationColor = Property.TextDecorationColor;
+import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
 
 export interface OSAppFileProps {
   readonly id: number;
@@ -28,8 +29,17 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
   (props, ref) => {
     // Retrieve icon scale from settings
     const iconScale = useAppSelector((state) => state.settings.iconScale);
-    const isTrashFilled =
-      useAppSelector((state) => state.files.trashFiles).length > 0;
+    const [isTrashFilled, setIsTrashFilled] = useState(
+      OSFileSystem.isTrashFilled(),
+    );
+
+    useEffect(() => {
+      const updateTrashStatus = () =>
+        setIsTrashFilled(OSFileSystem.isTrashFilled());
+
+      OSFileSystem.addListener(updateTrashStatus);
+      return () => OSFileSystem.removeListener(updateTrashStatus);
+    }, []);
 
     // Toggle selection on click; support ctrl-click for multi-selection
     const onClick = useCallback(
@@ -58,9 +68,13 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
       [],
     );
 
+    const isTrashIcon = () =>
+      props.props.icon === "/icons/trash-full.png" ||
+      props.props.icon === "/icons/trash-empty.png";
+
     return (
       <div
-        className={`flex flex-col justify-center items-center select-none hover:bg-[#77777730] rounded-md hover:backdrop-brightness-150`}
+        className={`flex flex-col justify-center items-center select-none hover:bg-[#77777730] rounded-md hover:backdrop-brightness-150 text-sm`}
         onClick={onClick}
         onDoubleClick={props.onDoubleClick}
         onMouseDown={onDragStart}
@@ -78,8 +92,9 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
         <Image
           width={iconScale}
           height={iconScale}
+          priority
           src={
-            props.props.id === 0
+            isTrashIcon()
               ? isTrashFilled
                 ? "/icons/trash-full.png"
                 : "/icons/trash-empty.png"

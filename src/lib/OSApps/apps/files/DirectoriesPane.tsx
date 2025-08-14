@@ -21,7 +21,7 @@ const DirectoryButton = (props: {
 
 export default function DirectoriesPane(props: DirectoriesPaneProps) {
   return (
-    <div className="h-full w-60 bg-gray-200 flex flex-col text-gray-700 p-2 gap-1">
+    <div className="h-full w-56 bg-gray-200 flex flex-col shrink-0 text-gray-700 p-2 gap-1">
       <DirectoryButton onClick={props.onDirectory} name="Root" path="/" />
       <DirectoryButton onClick={props.onDirectory} name="Trash" path="/trash" />
       <DirectoryButton onClick={props.onDirectory} name="Home" path="/home" />

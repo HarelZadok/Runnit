@@ -2,7 +2,13 @@
 
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { OSAppFile } from "@/lib/features/OSApp/OSAppFile";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import Taskbar from "@/lib/features/taskbar/Taskbar";
 import {
   addActiveDesktopApp,
@@ -21,19 +27,18 @@ import {
 import AppLauncher from "@/lib/features/appLauncher/AppLauncher";
 import { launchApp } from "@/lib/features/windowManager/windowManagerSlice";
 import { changeDesktopBackground } from "@/lib/features/settings/settingsSlice";
-import { getSetting } from "@/lib/functions";
+import {
+  canAccessStorage,
+  clearSettings,
+  getSetting,
+  setSetting,
+} from "@/lib/functions";
+import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
+import { version } from "@/../package.json";
+import UpdateNotifier from "@/lib/features/updateNotifier/UpdateNotifier";
 
 export default function Desktop() {
-  const TEST_APPS = false;
-
-  let apps = useAppSelector((state) => state.desktop.desktopApps);
-  if (TEST_APPS)
-    apps = Array.from({ length: 50 }, (_, i) => ({
-      id: i,
-      name: "App " + i,
-      icon: "/icons/trash.png",
-    }));
-
+  const apps = useAppSelector((state) => state.desktop.desktopApps);
   const openApps = useAppSelector((state) => state.windowManager.openApps);
   const activeApps = useAppSelector((state) => state.desktop.activeDesktopApps);
   const background = useAppSelector((state) => state.settings.background);
@@ -49,6 +54,15 @@ export default function Desktop() {
   const [selectionYEnd, setSelectionYEnd] = useState(-1);
   const itemRefs = useRef<HTMLDivElement[]>([]);
   const dispatch = useAppDispatch();
+
+  const updateRef = useRef(false);
+  useLayoutEffect(() => {
+    if (canAccessStorage() && getSetting("version") !== version) {
+      updateRef.current = true;
+      clearSettings();
+      setSetting("version", version);
+    }
+  }, []);
 
   function getElementsInSelectionBox(
     startX: number,
@@ -192,7 +206,7 @@ export default function Desktop() {
     setColumnHeight(desktopHeight / (iconScale + 50) - 1);
   }, [iconScale, taskbarHeight]);
 
-  const showApp = useCallback((id: number) => {
+  const showApp = useCallback((id: number, args?: string[]) => {
     const app = appRegistry.getClass(id);
     if (app) {
       const position =
@@ -210,6 +224,7 @@ export default function Desktop() {
         height: height,
         width: width,
       };
+      app.args = args ?? [];
       return <OSAppWindow props={props} key={id + 0.1} app={app} />;
     }
   }, []);
@@ -221,6 +236,10 @@ export default function Desktop() {
 
     deletedApps.map((app) => dispatch(removeDesktopApp(app)));
   }, [apps, dispatch]);
+
+  useEffect(() => {
+    OSFileSystem.init();
+  }, []);
 
   return (
     <div
@@ -283,7 +302,7 @@ export default function Desktop() {
                 onDoubleClick={() => {
                   for (const app of activeApps) {
                     dispatch(clearActiveDesktopApps());
-                    dispatch(launchApp(app.id));
+                    dispatch(launchApp({ id: app.id }));
                   }
                 }}
                 isActive={appSelect}
@@ -297,7 +316,8 @@ export default function Desktop() {
       )}
       <Taskbar />
       <AppLauncher />
-      {openApps.map((app) => showApp(app.pid))}
+      {openApps.map((app) => showApp(app.pid, app.args))}
+      {updateRef.current && <UpdateNotifier />}
     </div>
   );
 }

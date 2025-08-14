@@ -8,6 +8,7 @@ export interface appInstance {
   isMaximized: boolean;
   isFocused: boolean;
   zIndex: number;
+  args: string[];
 }
 
 export interface windowManagerState {
@@ -29,10 +30,13 @@ export const windowManagerSlice = createSlice({
   initialState,
   reducers: {
     // Launch or focus an app window; increments z-index and handles restore
-    launchApp: (state, action: PayloadAction<number>) => {
+    launchApp: (
+      state,
+      action: PayloadAction<{ id: number; args?: string[] }>,
+    ) => {
       state.lastUnfocusedApp = -1;
       state.focusZIndex++;
-      const app = state.openApps.find((app) => app.pid === action.payload);
+      const app = state.openApps.find((app) => app.pid === action.payload.id);
       state.openApps.map((app) => (app.isFocused = false));
       if (app) {
         app.isMinimized = false;
@@ -40,18 +44,19 @@ export const windowManagerSlice = createSlice({
         app.zIndex = state.focusZIndex;
       } else
         state.openApps.push({
-          pid: action.payload,
+          pid: action.payload.id,
           isMinimized: false,
           isMaximized:
             getSetting("windowPrefs" + action.payload)?.isMaximized ?? false,
           isFocused: true,
           zIndex: state.focusZIndex,
+          args: action.payload.args ?? [],
         });
     },
     // Close window and adjust z-index for remaining windows
     closeApp: (state, action: PayloadAction<number>) => {
       state.openApps = state.openApps.filter(
-        (instance) => instance.pid !== action.payload
+        (instance) => instance.pid !== action.payload,
       );
       if (state.openApps.length === 0) {
         state.focusZIndex = 1000;

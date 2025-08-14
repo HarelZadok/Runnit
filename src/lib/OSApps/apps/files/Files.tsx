@@ -1,4 +1,4 @@
-import OSApp from "@/lib/features/OSApp/OSApp";
+import OSApp, { OSAppProps } from "@/lib/features/OSApp/OSApp";
 import React from "react";
 import DirectoriesPane from "@/lib/OSApps/apps/files/DirectoriesPane";
 import DirectoryDetailsPane from "@/lib/OSApps/apps/files/DirectoryDetailsPane";
@@ -12,7 +12,7 @@ export default class Files extends OSApp {
     currentDirectory: "/",
   };
 
-  constructor(props?: never) {
+  constructor(props?: OSAppProps) {
     super(props);
 
     this.setAppFile({
@@ -28,7 +28,10 @@ export default class Files extends OSApp {
     return (
       <div className="h-full w-full bg-white flex flex-row">
         <DirectoriesPane onDirectory={this.handleOnDirectory} />
-        <DirectoryDetailsPane directory={this.state.currentDirectory} />
+        <DirectoryDetailsPane
+          onDirectory={this.handleOnDirectory}
+          directory={this.state.currentDirectory}
+        />
       </div>
     );
   }

@@ -11,6 +11,11 @@ export function setSetting(keyword: string, setting: unknown) {
   localStorage.setItem("!." + keyword, JSON.stringify(setting));
 }
 
+export function clearSettings() {
+  if (!canAccessStorage()) return;
+  localStorage.clear();
+}
+
 export function canAccessStorage() {
   return typeof window !== "undefined";
 }

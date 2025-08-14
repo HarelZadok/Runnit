@@ -19,13 +19,13 @@ export default function Taskbar() {
   const taskbarHeight = useAppSelector((state) => state.settings.taskbarHeight);
   const pinnedApps = useAppSelector((state) => state.taskbar.pinnedTaskbarApps);
   const openedApps = useAppSelector(
-    (state) => state.taskbar.openedTaskbarApps
+    (state) => state.taskbar.openedTaskbarApps,
   ).filter((app) => !pinnedApps.some((cApp) => cApp.id === app.id));
   const openedAppsInstances = useAppSelector(
-    (state) => state.windowManager.openApps
+    (state) => state.windowManager.openApps,
   );
   const [focusedAppId, setFocusedAppId] = useState<number | undefined>(
-    undefined
+    undefined,
   );
   const [menuId, setMenuId] = useState<number>(-1);
   const hideRate = useAppSelector((state) => state.taskbar.hideRate);
@@ -46,7 +46,7 @@ export default function Taskbar() {
 
   return (
     <div
-      className='absolute w-full px-10 pb-8 flex items-center justify-center transition-all duration-300'
+      className="absolute w-full px-10 pb-8 flex items-center justify-center transition-all duration-300"
       style={{
         height: taskbarHeight,
         bottom: hideRate > 0 && !forceShow ? -taskbarHeight : 0,
@@ -54,7 +54,7 @@ export default function Taskbar() {
     >
       <div
         onMouseDown={(e) => e.stopPropagation()}
-        className='
+        className="
 			relative
 			w-max
 			h-full
@@ -73,10 +73,10 @@ export default function Taskbar() {
 			before:w-full
 			before:h-full
 			before:-z-1
-			'
+			"
       >
         <div
-          className='group cursor-pointer'
+          className="group cursor-pointer"
           onClick={() => {
             dispatch(toggleAppLauncher());
           }}
@@ -94,9 +94,10 @@ export default function Taskbar() {
           >
             <Image
               draggable={false}
-              className='cursor-pointer'
-              src='/icons/app-launcher.png'
-              alt=''
+              className="cursor-pointer"
+              src="/icons/app-launcher.png"
+              priority
+              alt=""
               width={taskbarHeight - 35}
               height={taskbarHeight - 35}
             />
@@ -134,7 +135,7 @@ export default function Taskbar() {
 const FocusBar = ({ isFocused }: { isFocused: boolean }) => {
   return (
     <div
-      className='absolute w-2/5 h-1 top-[1px] rounded-full transition-colors border-[1] duration-400'
+      className="absolute w-2/5 h-1 top-[1px] rounded-full transition-colors border-[1] duration-400"
       style={{
         backgroundColor: isFocused ? "#222222FF" : "#FFFFFFFF",
         borderColor: isFocused ? "#FFFFFFFF" : "#222222FF",
@@ -153,7 +154,7 @@ const TaskbarIcon = (props: {
   const taskbarHeight = useAppSelector((state) => state.settings.taskbarHeight);
   const divRef = useRef<HTMLDivElement>(null);
   const isAppLauncherPresent = useAppSelector(
-    (state) => state.windowManager.isAppLauncherPresent
+    (state) => state.windowManager.isAppLauncherPresent,
   );
 
   const onMenu = useCallback(
@@ -163,7 +164,7 @@ const TaskbarIcon = (props: {
         else props.setMenuId(-1);
       }
     },
-    [props]
+    [props],
   );
 
   const rect = divRef.current?.getBoundingClientRect();
@@ -173,7 +174,7 @@ const TaskbarIcon = (props: {
     <div>
       {props.menuId === props.app.id && (
         <div
-          className='absolute bg-[#ffffffbb] backdrop-blur-3xl backdrop-brightness-60 text-black w-[120px] rounded-lg flex flex-col items-center overflow-hidden'
+          className="absolute bg-[#ffffffbb] backdrop-blur-3xl backdrop-brightness-60 text-black w-[120px] rounded-lg flex flex-col items-center overflow-hidden"
           style={{
             bottom: taskbarHeight - 25,
             left:
@@ -182,7 +183,7 @@ const TaskbarIcon = (props: {
               rect?.left - parentRect?.left + rect?.width / 2 - 60,
           }}
         >
-          <p className='font-bold text-sm border-b w-full text-center p-1'>
+          <p className="font-bold text-sm border-b w-full text-center p-1">
             {props.app.name}
           </p>
           <div
@@ -190,32 +191,32 @@ const TaskbarIcon = (props: {
               props.setMenuId(-1);
               dispatch(pinTaskbarApp(props.app));
             }}
-            className='w-full h-7 flex justify-center items-center hover:backdrop-brightness-20 hover:bg-[#999999]'
+            className="w-full h-7 flex justify-center items-center hover:backdrop-brightness-20 hover:bg-[#999999]"
           >
-            <p className='text-sm'>Pin App</p>
+            <p className="text-sm">Pin App</p>
           </div>
           <div
             onClick={() => {
               props.setMenuId(-1);
               dispatch(closeApp(props.app.id));
             }}
-            className='w-full h-7 flex justify-center items-center hover:backdrop-brightness-20 hover:bg-[#999999]'
+            className="w-full h-7 flex justify-center items-center hover:backdrop-brightness-20 hover:bg-[#999999]"
           >
-            <p className='text-sm'>Close App</p>
+            <p className="text-sm">Close App</p>
           </div>
         </div>
       )}
       <div
-        className='group cursor-pointer'
+        className="group cursor-pointer"
         ref={divRef}
         onContextMenu={onMenu}
         onClick={() => {
           if (isAppLauncherPresent) dispatch(toggleAppLauncher());
-          dispatch(launchApp(props.app.id));
+          dispatch(launchApp({ id: props.app.id }));
         }}
       >
         <div
-          className='transition-transform duration-100 group-hover:-translate-y-1.5 relative flex-col flex items-center justify-center'
+          className="transition-transform duration-100 group-hover:-translate-y-1.5 relative flex-col flex items-center justify-center"
           style={{
             width: taskbarHeight - 35,
             height: taskbarHeight - 35,
@@ -224,7 +225,8 @@ const TaskbarIcon = (props: {
           <Image
             draggable={false}
             src={props.app.icon}
-            alt=''
+            priority
+            alt=""
             width={taskbarHeight - 45}
             height={taskbarHeight - 45}
           />
@@ -246,7 +248,7 @@ const PinnedTaskbarIcon = (props: {
   const divRef = useRef<HTMLDivElement>(null);
   const openApps = useAppSelector((state) => state.windowManager.openApps);
   const isAppLauncherPresent = useAppSelector(
-    (state) => state.windowManager.isAppLauncherPresent
+    (state) => state.windowManager.isAppLauncherPresent,
   );
 
   const onMenu = useCallback(
@@ -256,7 +258,7 @@ const PinnedTaskbarIcon = (props: {
         else props.setMenuId(-1);
       }
     },
-    [props]
+    [props],
   );
 
   const rect = divRef.current?.getBoundingClientRect();
@@ -266,7 +268,7 @@ const PinnedTaskbarIcon = (props: {
     <div>
       {props.menuId === props.app.id && (
         <div
-          className='absolute bg-[#ffffffbb] backdrop-blur-3xl backdrop-brightness-60 text-black w-[120px] rounded-lg flex flex-col items-center overflow-hidden'
+          className="absolute bg-[#ffffffbb] backdrop-blur-3xl backdrop-brightness-60 text-black w-[120px] rounded-lg flex flex-col items-center overflow-hidden"
           style={{
             bottom: taskbarHeight - 25,
             left:
@@ -275,7 +277,7 @@ const PinnedTaskbarIcon = (props: {
               rect?.left - parentRect?.left + rect?.width / 2 - 60,
           }}
         >
-          <p className='font-bold text-sm border-b w-full text-center p-1'>
+          <p className="font-bold text-sm border-b w-full text-center p-1">
             {props.app.name}
           </p>
           <div
@@ -283,9 +285,9 @@ const PinnedTaskbarIcon = (props: {
               props.setMenuId(-1);
               dispatch(unpinTaskbarApp(props.app));
             }}
-            className='w-full h-7 flex justify-center items-center hover:backdrop-brightness-20 hover:bg-[#999999]'
+            className="w-full h-7 flex justify-center items-center hover:backdrop-brightness-20 hover:bg-[#999999]"
           >
-            <p className='text-sm'>Unpin App</p>
+            <p className="text-sm">Unpin App</p>
           </div>
           {openApps.some((cApp) => cApp.pid === props.app.id) && (
             <div
@@ -293,16 +295,16 @@ const PinnedTaskbarIcon = (props: {
                 props.setMenuId(-1);
                 dispatch(closeApp(props.app.id));
               }}
-              className='w-full h-7 flex justify-center items-center hover:backdrop-brightness-20 hover:bg-[#999999]'
+              className="w-full h-7 flex justify-center items-center hover:backdrop-brightness-20 hover:bg-[#999999]"
             >
-              <p className='text-sm'>Close App</p>
+              <p className="text-sm">Close App</p>
             </div>
           )}
         </div>
       )}
-      <div className='group cursor-pointer' ref={divRef} onContextMenu={onMenu}>
+      <div className="group cursor-pointer" ref={divRef} onContextMenu={onMenu}>
         <div
-          className='transition-transform duration-100 group-hover:-translate-y-1.5 relative flex-col flex items-center justify-center'
+          className="transition-transform duration-100 group-hover:-translate-y-1.5 relative flex-col flex items-center justify-center"
           style={{
             width: taskbarHeight - 35,
             height: taskbarHeight - 35,
@@ -310,14 +312,15 @@ const PinnedTaskbarIcon = (props: {
         >
           <Image
             draggable={false}
-            className='cursor-pointer'
+            className="cursor-pointer"
             src={props.app.icon}
-            alt=''
+            priority
+            alt=""
             width={taskbarHeight - 45}
             height={taskbarHeight - 45}
             onClick={() => {
               if (isAppLauncherPresent) dispatch(toggleAppLauncher());
-              dispatch(launchApp(props.app.id));
+              dispatch(launchApp({ id: props.app.id }));
             }}
           />
           {openApps.some((cApp) => cApp.pid === props.app.id) && (

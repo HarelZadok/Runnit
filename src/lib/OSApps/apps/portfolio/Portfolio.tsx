@@ -1,4 +1,4 @@
-import OSApp from "@/lib/features/OSApp/OSApp";
+import OSApp, { OSAppProps } from "@/lib/features/OSApp/OSApp";
 
 interface PortfolioState {
   isLoading: boolean;
@@ -9,7 +9,7 @@ export default class Portfolio extends OSApp {
     isLoading: true,
   };
 
-  constructor(props?: never) {
+  constructor(props?: OSAppProps) {
     super(props);
 
     this.setAppFile({

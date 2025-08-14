@@ -1,7 +1,7 @@
 // OSAppWindow.tsx: Renders a resizable, draggable window for a given OSApp instance, integrates with windowManager state
 "use client";
 
-import OSApp from "@/lib/features/OSApp/OSApp";
+import OSApp, { OSAppProps } from "@/lib/features/OSApp/OSApp";
 import React, { useEffect, useState, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
@@ -38,7 +38,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
   // Retrieve size and position settings from Redux
   const taskbarHeight = useAppSelector((state) => state.settings.taskbarHeight);
   const instance = useAppSelector((state) => state.windowManager.openApps).find(
-    (cApp) => cApp.pid === app.getAppProps().appFile.id
+    (cApp) => cApp.pid === app.getAppProps().appFile.id,
   )!;
   const maximized = instance.isMaximized;
   const minimized = instance.isMinimized;
@@ -59,7 +59,10 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
   const [isHidingTaskbar, setIsHidingTaskbar] = useState(false);
 
   const appRef = useRef<OSApp>(null);
-  const AppComponent = app.constructor as React.ComponentClass<object, object>;
+  const AppComponent = app.constructor as React.ComponentClass<
+    OSAppProps,
+    object
+  >;
 
   const hasTriggeredHideRef = useRef(false);
 
@@ -289,7 +292,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
           onMouseEnter={() => setIsMouseOver(true)}
           onMouseLeave={() => setIsMouseOver(false)}
         >
-          <AppComponent ref={appRef} />
+          <AppComponent args={app.args} ref={appRef} />
         </div>
       </div>
     </div>

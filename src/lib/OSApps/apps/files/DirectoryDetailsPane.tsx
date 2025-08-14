@@ -2,10 +2,14 @@ import { useCallback, useEffect, useState } from "react";
 import { Folder, File } from "@/lib/OSApps/apps/files/FilesItem";
 import { OSAppFile } from "@/lib/features/OSApp/OSAppFile";
 import { useAppDispatch } from "@/lib/hooks";
-import { deleteItem } from "@/lib/OSApps/apps/files/filesSlice";
+import { launchApp } from "@/lib/features/windowManager/windowManagerSlice";
+import { apps } from "@/lib/OSApps/AppList";
+import CodeEditor from "@/lib/OSApps/apps/code_editor/CodeEditor";
+import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
 
 interface DirectoryDetailsPaneProps {
   directory: string;
+  onDirectory: (directory: string) => void;
 }
 
 const CreateFileDialog = ({
@@ -51,15 +55,12 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const jsonData = localStorage.getItem(props.directory);
-    if (jsonData) {
-      setFolder(JSON.parse(jsonData) as Folder);
+    const folder = OSFileSystem.getFolder(props.directory);
+    if (folder) {
+      setFolder(folder);
     } else {
-      const path = props.directory;
-      const name = path.substring(path.lastIndexOf(".", path.length));
-      const newFolder = new Folder(name, path);
-      setFolder(newFolder);
-      localStorage.setItem(props.directory, JSON.stringify(newFolder));
+      const newFolder = OSFileSystem.createFolder(props.directory);
+      if (newFolder) setFolder(newFolder);
     }
   }, [props.directory]);
 
@@ -68,27 +69,45 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
       if (name.length === 0 || !name.includes(".") || name.endsWith("."))
         return;
 
+      if (folder?.items?.some((item) => item.name === name)) return;
+
+      if (
+        name.includes("/") ||
+        name.includes("\\") ||
+        name.includes(":") ||
+        name.includes("*") ||
+        name.includes("?") ||
+        name.includes('"') ||
+        name.includes("<") ||
+        name.includes(">") ||
+        name.includes("|")
+      ) {
+        return;
+      }
+
       setShowDialog(false);
-      folder?.items?.push(
+      const file = OSFileSystem.createFile(
         new File(
           name.substring(0, name.lastIndexOf(".")),
-          props.directory,
+          props.directory + name,
           name.substring(name.lastIndexOf("."), name.length),
         ),
       );
-      setFolder(folder);
-      localStorage.setItem(props.directory, JSON.stringify(folder));
+      if (file) {
+        folder?.items.push(file);
+        setFolder(folder);
+      }
     },
     [folder, props.directory],
   );
 
   return (
     <div className="w-full h-full bg-white text-black flex flex-col">
-      <div className="w-full h-8 bg-gray-100 text-gray-700 px-3 flex items-center">
+      <div className="w-full h-8 bg-gray-100 text-gray-700 px-3 flex shrink-0 items-center">
         <p>{props.directory}</p>
       </div>
       <div
-        className="relative flex flex-col w-full h-full p-2"
+        className="relative flex flex-row flex-wrap w-full h-full content-start p-2 overflow-scroll"
         onContextMenu={() => setShowDialog(true)}
       >
         {folder?.items?.map((item, i) => (
@@ -96,17 +115,41 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
             key={i}
             textColor="black"
             props={{
-              name: item.name + (item as File).extension,
+              name:
+                item.name +
+                ("extension" in item ? (item as File).extension : ""),
               icon: (item as File).icon,
               id: item.id,
             }}
+            width={40}
+            height={40}
             onMenu={() => {
               const updatedFolder: Folder = {
                 ...folder,
                 items: folder.items.filter((cItem) => cItem.id !== item.id),
               };
               setFolder(updatedFolder);
-              deleteItem(dispatch, item, updatedFolder);
+              const [path] = OSFileSystem.fullPathToPathAndName(item.path);
+              if (path === "/trash/") OSFileSystem.deleteItem(item);
+              else OSFileSystem.moveToTrash(item);
+            }}
+            onDoubleClick={() => {
+              if ("items" in item) {
+                props.onDirectory(item.path);
+              } else if ("extension" in item) {
+                const id = apps.findIndex(
+                  (app) => app.constructor === CodeEditor,
+                );
+                dispatch(
+                  launchApp({
+                    id,
+                    args: [
+                      "--file",
+                      `${folder!.path}/${item.name + (item as File).extension}`,
+                    ],
+                  }),
+                );
+              }
             }}
           />
         ))}

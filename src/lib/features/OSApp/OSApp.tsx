@@ -16,6 +16,10 @@ export interface OSAppInterface {
   defaultHeight: number;
 }
 
+export interface OSAppProps {
+  args?: string[];
+}
+
 type Sides = "north" | "south" | "east" | "west";
 
 export default abstract class OSApp
@@ -30,6 +34,7 @@ export default abstract class OSApp
   public minimumHeight: number;
   // appFile stores basic info (id, name, icon) passed to desktop and taskbar
   public appFile: OSAppFileProps;
+  public args: string[];
   private readonly headerHeight: number;
   // Variables
   private isResizing = false;
@@ -58,7 +63,7 @@ export default abstract class OSApp
   private onClose: (() => void) | undefined;
   private headerTrailingItems: ReactElement[];
 
-  protected constructor(props?: never) {
+  protected constructor(props?: OSAppProps) {
     super(props ?? {});
 
     // Initialize app metadata and default window size
@@ -67,6 +72,8 @@ export default abstract class OSApp
       name: "",
       icon: "",
     };
+
+    this.args = props?.args ?? [];
 
     this.headerTrailingItems = [];
     this.defaultWidth = 1100;
