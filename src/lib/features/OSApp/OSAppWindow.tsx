@@ -13,8 +13,10 @@ import {
 import {
   closeApp,
   focusApp,
+  indicateFullscreen,
   maximizeApp,
   minimizeApp,
+  unindicateFullscreen,
   unmaximizeApp,
   unminimizeApp,
 } from "@/lib/features/windowManager/windowManagerSlice";
@@ -136,20 +138,29 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
     });
     // Dragging: update position incrementally
     instance.setOnGrabbing((e) => {
+      document.body.style.cursor = "move";
       const deltaX = e.clientX - prevMouseRef.current.x;
       const deltaY = e.clientY - prevMouseRef.current.y;
 
       setPosition((prev) => ({
         x: prev.x + deltaX,
-        y: Math.max(prev.y + deltaY, 0),
+        y: Math.max(prev.y + deltaY, -6),
       }));
       prevMouseRef.current = { x: e.clientX, y: e.clientY };
+
+      if (e.clientY <= 10) {
+        dispatch(indicateFullscreen());
+      } else {
+        dispatch(unindicateFullscreen());
+      }
     });
     // Drag end: stop grabbing
     instance.setOnGrabEnd((e) => {
       setIsGrabbing(false);
-      if (e.clientY <= 5) dispatch(maximizeApp(app.getAppProps().appFile.id));
+      if (e.clientY <= 10) dispatch(maximizeApp(app.getAppProps().appFile.id));
     });
+    document.body.style.cursor = "auto";
+
     // Maximize toggle
     instance.setOnMaximize(() => {
       if (!maximized) dispatch(maximizeApp(app.getAppProps().appFile.id));

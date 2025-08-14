@@ -45,6 +45,9 @@ export default function Desktop() {
   const taskbarHeight = useAppSelector((state) => state.settings.taskbarHeight);
   const iconScale = useAppSelector((state) => state.settings.iconScale);
   const taskbarHideRate = useAppSelector((state) => state.taskbar.hideRate);
+  const shouldIndicateFullscreen = useAppSelector(
+    (state) => state.windowManager.shouldIndicateFullscreen,
+  );
   const [showingTaskbar, setShowingTaskbar] = useState(false);
   const [columnHeight, setColumnHeight] = useState<number>(-1);
   const [isSelecting, setIsSelecting] = useState<boolean>(false);
@@ -317,6 +320,10 @@ export default function Desktop() {
       <Taskbar />
       <AppLauncher />
       {openApps.map((app) => showApp(app.pid, app.args))}
+      <div
+        className="absolute w-screen h-screen bg-white/30 backdrop-blur-2xl border-white border-2 z-999 transition-all duration-500"
+        style={{ opacity: shouldIndicateFullscreen ? "100%" : "0%" }}
+      />
       {updateRef.current && <UpdateNotifier />}
     </div>
   );

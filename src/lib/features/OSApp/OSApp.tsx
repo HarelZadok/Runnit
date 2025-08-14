@@ -140,7 +140,7 @@ export default abstract class OSApp
   header(): ReactElement {
     return (
       <div
-        className="flex flex-row justify-between items-center bg-[#252525B4] text-white"
+        className="flex flex-row justify-between items-center cursor-move bg-[#252525B4] text-white"
         style={{ height: this.headerHeight }}
       >
         <div
@@ -550,6 +550,8 @@ export default abstract class OSApp
   };
 
   private mResizeUpdateCursor = () => {
+    if (this.isDragging) return;
+
     if (this.northResize && this.eastResize)
       document.body.style.cursor = "ne-resize";
     else if (this.northResize && this.westResize)

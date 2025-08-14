@@ -16,6 +16,7 @@ export interface windowManagerState {
   focusZIndex: number; // Current highest z-index for focus stacking
   isAppLauncherPresent: boolean;
   lastUnfocusedApp: number;
+  shouldIndicateFullscreen: boolean;
 }
 
 const initialState: windowManagerState = {
@@ -23,6 +24,7 @@ const initialState: windowManagerState = {
   focusZIndex: 1000,
   isAppLauncherPresent: false,
   lastUnfocusedApp: -1,
+  shouldIndicateFullscreen: false,
 };
 
 export const windowManagerSlice = createSlice({
@@ -142,6 +144,12 @@ export const windowManagerSlice = createSlice({
     toggleAppLauncher: (state) => {
       state.isAppLauncherPresent = !state.isAppLauncherPresent;
     },
+    indicateFullscreen: (state) => {
+      state.shouldIndicateFullscreen = true;
+    },
+    unindicateFullscreen: (state) => {
+      state.shouldIndicateFullscreen = false;
+    },
   },
 });
 
@@ -155,5 +163,7 @@ export const {
   focusApp,
   unfocusApp,
   toggleAppLauncher,
+  indicateFullscreen,
+  unindicateFullscreen,
 } = windowManagerSlice.actions;
 export default windowManagerSlice.reducer;
