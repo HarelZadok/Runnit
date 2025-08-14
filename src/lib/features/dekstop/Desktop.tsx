@@ -34,7 +34,7 @@ import {
   setSetting,
 } from "@/lib/functions";
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
-import { version } from "@/../package.json";
+import packageInfo from "@/../package.json";
 import UpdateNotifier from "@/lib/features/updateNotifier/UpdateNotifier";
 
 export default function Desktop() {
@@ -60,10 +60,10 @@ export default function Desktop() {
 
   const updateRef = useRef(false);
   useLayoutEffect(() => {
-    if (canAccessStorage() && getSetting("version") !== version) {
+    if (canAccessStorage() && getSetting("version") !== packageInfo.version) {
       updateRef.current = true;
       clearSettings();
-      setSetting("version", version);
+      setSetting("version", packageInfo.version);
     }
   }, []);
 
@@ -321,7 +321,7 @@ export default function Desktop() {
       <AppLauncher />
       {openApps.map((app) => showApp(app.pid, app.args))}
       <div
-        className="absolute w-screen h-screen bg-white/30 backdrop-blur-2xl border-white border-2 z-999 transition-all duration-500"
+        className="absolute w-screen h-screen bg-white/30 backdrop-blur-2xl border-white border-2 z-999 transition-all duration-500 pointer-events-none"
         style={{ opacity: shouldIndicateFullscreen ? "100%" : "0%" }}
       />
       {updateRef.current && <UpdateNotifier />}

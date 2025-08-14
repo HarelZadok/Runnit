@@ -1,5 +1,5 @@
 import React from "react";
-import { version } from "@/../package.json";
+import packageInfo from "@/../package.json";
 
 export default function UpdateNotifier() {
   const handleReload = () => {
@@ -93,7 +93,7 @@ export default function UpdateNotifier() {
         {/* Version display at bottom */}
         <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 animate-textFade">
           <span className="inline-block px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 text-xs font-semibold rounded-full border border-blue-200/50">
-            Version {version}
+            Version {packageInfo.version}
           </span>
         </div>
 
