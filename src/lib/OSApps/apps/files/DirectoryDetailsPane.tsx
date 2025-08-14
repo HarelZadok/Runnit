@@ -56,7 +56,6 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
 
   useEffect(() => {
     const f = OSFileSystem.getFolder(props.directory);
-    console.log("f" + f);
     if (f) {
       setFolder(f);
     } else {

@@ -6,7 +6,6 @@ export class OSFileSystem {
 
   public static init() {
     if (!OSFileSystem.getFolder("/")) {
-      console.log("creating");
       OSFileSystem.updateFolder(new Folder("Root", "/"));
       OSFileSystem.createFolderFrom(
         new Folder("Trash", "/trash", "/icons/trash-empty.png"),
@@ -55,7 +54,6 @@ export class OSFileSystem {
   public static createFolderFrom(folder: Folder): Folder | null {
     let [path] = OSFileSystem.fullPathToPathAndName(folder.path);
     if (!path.endsWith("/")) path += "/";
-    // console.log(path);
     const parent = OSFileSystem.getFolder(path);
     if (parent) {
       parent.items.push(folder);
@@ -86,7 +84,6 @@ export class OSFileSystem {
   public static updateFolder(folder: Folder): void {
     let path = folder.path;
     if (!path.endsWith("/")) path += "/";
-    console.log("update " + path);
     localStorage.setItem(path, JSON.stringify(folder));
     this.notifyListeners();
   }

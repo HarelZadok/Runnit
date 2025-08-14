@@ -156,6 +156,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
     });
     // Drag end: stop grabbing
     instance.setOnGrabEnd((e) => {
+      dispatch(unindicateFullscreen());
       setIsGrabbing(false);
       document.body.style.cursor = "auto";
       if (e.clientY <= 10) dispatch(maximizeApp(app.getAppProps().appFile.id));
