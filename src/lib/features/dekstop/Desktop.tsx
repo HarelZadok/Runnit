@@ -27,12 +27,7 @@ import {
 import AppLauncher from "@/lib/features/appLauncher/AppLauncher";
 import { launchApp } from "@/lib/features/windowManager/windowManagerSlice";
 import { changeDesktopBackground } from "@/lib/features/settings/settingsSlice";
-import {
-  canAccessStorage,
-  clearSettings,
-  getSetting,
-  setSetting,
-} from "@/lib/functions";
+import { canAccessStorage, getSetting } from "@/lib/functions";
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
 import packageInfo from "@/../package.json";
 import UpdateNotifier from "@/lib/features/updateNotifier/UpdateNotifier";
@@ -62,8 +57,6 @@ export default function Desktop() {
   useLayoutEffect(() => {
     if (canAccessStorage() && getSetting("version") !== packageInfo.version) {
       updateRef.current = true;
-      clearSettings();
-      setSetting("version", packageInfo.version);
     }
   }, []);
 

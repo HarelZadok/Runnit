@@ -1,8 +1,11 @@
 import React from "react";
 import packageInfo from "@/../package.json";
+import { clearSettings, setSetting } from "@/lib/functions";
 
 export default function UpdateNotifier() {
   const handleReload = () => {
+    clearSettings();
+    setSetting("version", packageInfo.version);
     window.location.reload();
   };
 

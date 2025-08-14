@@ -55,9 +55,10 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const folder = OSFileSystem.getFolder(props.directory);
-    if (folder) {
-      setFolder(folder);
+    const f = OSFileSystem.getFolder(props.directory);
+    console.log("f" + f);
+    if (f) {
+      setFolder(f);
     } else {
       const newFolder = OSFileSystem.createFolder(props.directory);
       if (newFolder) setFolder(newFolder);
@@ -86,10 +87,15 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
       }
 
       setShowDialog(false);
+
+      let path = props.directory;
+      if (!path.endsWith("/")) path += "/";
+      path += name;
+
       const file = OSFileSystem.createFile(
         new File(
           name.substring(0, name.lastIndexOf(".")),
-          props.directory + name,
+          path,
           name.substring(name.lastIndexOf("."), name.length),
         ),
       );

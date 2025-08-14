@@ -37,6 +37,7 @@ export default class Files extends OSApp {
   }
 
   private handleOnDirectory = (directory: string) => {
+    if (!directory.endsWith("/")) directory += "/";
     this.setState({ currentDirectory: directory });
   };
 }
