@@ -127,6 +127,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
     // Drag start: capture initial mouse
     instance.setOnGrabStart((e) => {
       setIsGrabbing(true);
+      document.body.style.cursor = "move";
       if (maximized) {
         dispatch(unmaximizeApp(app.getAppProps().appFile.id));
         setPosition({
@@ -138,7 +139,6 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
     });
     // Dragging: update position incrementally
     instance.setOnGrabbing((e) => {
-      document.body.style.cursor = "move";
       const deltaX = e.clientX - prevMouseRef.current.x;
       const deltaY = e.clientY - prevMouseRef.current.y;
 
@@ -157,9 +157,9 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
     // Drag end: stop grabbing
     instance.setOnGrabEnd((e) => {
       setIsGrabbing(false);
+      document.body.style.cursor = "auto";
       if (e.clientY <= 10) dispatch(maximizeApp(app.getAppProps().appFile.id));
     });
-    document.body.style.cursor = "auto";
 
     // Maximize toggle
     instance.setOnMaximize(() => {

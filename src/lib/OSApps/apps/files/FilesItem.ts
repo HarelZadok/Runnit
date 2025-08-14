@@ -1,12 +1,13 @@
+import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
+
 export default abstract class FilesItem {
-  private static filesId = 1;
   public id: number;
   public name: string;
   public path: string;
   public icon: string;
 
   protected constructor(name: string, path: string, icon: string) {
-    this.id = FilesItem.filesId++;
+    this.id = OSFileSystem.generateFileId();
     this.name = name;
     this.path = path;
     this.icon = icon;

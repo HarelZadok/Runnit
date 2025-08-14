@@ -1,4 +1,5 @@
 import FilesItem, { Folder, File } from "@/lib/OSApps/apps/files/FilesItem";
+import { getSetting, setSetting } from "@/lib/functions";
 
 export class OSFileSystem {
   private static listeners: Set<() => void> = new Set();
@@ -154,6 +155,17 @@ export class OSFileSystem {
   public static isTrashFilled(): boolean {
     const trash = OSFileSystem.getFolder("/trash")!;
     return trash.items.length > 0;
+  }
+
+  public static generateFileId() {
+    const currentId = getSetting('fileId');
+
+    if (currentId)
+      setSetting('fileId', currentId + 1)
+    else
+      setSetting('fileId', 2)
+
+    return currentId ?? 1;
   }
 
   private static notifyListeners(): void {
