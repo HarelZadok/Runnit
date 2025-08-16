@@ -18,7 +18,7 @@ export default class Trash extends OSApp {
 
 const TrashComponent = () => {
   return (
-    <div className="text-black w-full h-full bg-white flex justify-center items-center">
+    <div className='text-black w-full h-full bg-white flex justify-center items-center'>
       <p>Trash!</p>
     </div>
   );

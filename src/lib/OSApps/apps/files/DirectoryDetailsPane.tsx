@@ -22,23 +22,23 @@ const CreateFileDialog = ({
   const [name, setName] = useState("");
 
   return (
-    <div className="flex flex-col absolute h-max w-60 left-1/2 top-1/2 -translate-1/2 bg-gray-300 p-3 rounded-xl">
-      <p className="self-center font-bold mb-6">Create new file</p>
+    <div className='flex flex-col absolute h-max w-60 left-1/2 top-1/2 -translate-1/2 bg-gray-300 p-3 rounded-xl'>
+      <p className='self-center font-bold mb-6'>Create new file</p>
       <input
         onChange={(e) => setName(e.currentTarget.value)}
-        className="bg-gray-200 rounded-md p-1 px-2 mb-5 outline-0"
-        type="text"
-        placeholder="File name"
+        className='bg-gray-200 rounded-md p-1 px-2 mb-5 outline-0'
+        type='text'
+        placeholder='File name'
       />
-      <div className="flex flex-row gap-2">
+      <div className='flex flex-row gap-2'>
         <div
-          className="self-end w-full text-center p-2 bg-red-400 text-white rounded-lg"
+          className='self-end w-full text-center p-2 bg-red-400 text-white rounded-lg'
           onClick={() => cancel()}
         >
           <p>Cancel</p>
         </div>
         <div
-          className="self-end w-full text-center p-2 bg-green-400 text-white rounded-lg"
+          className='self-end w-full text-center p-2 bg-green-400 text-white rounded-lg'
           onClick={() => createFile(name)}
         >
           <p>Create</p>
@@ -95,30 +95,30 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
         new File(
           name.substring(0, name.lastIndexOf(".")),
           path,
-          name.substring(name.lastIndexOf("."), name.length),
-        ),
+          name.substring(name.lastIndexOf("."), name.length)
+        )
       );
       if (file) {
         folder?.items.push(file);
         setFolder(folder);
       }
     },
-    [folder, props.directory],
+    [folder, props.directory]
   );
 
   return (
-    <div className="w-full h-full bg-white text-black flex flex-col">
-      <div className="w-full h-8 bg-gray-100 text-gray-700 px-3 flex shrink-0 items-center">
+    <div className='w-full h-full bg-white text-black flex flex-col'>
+      <div className='w-full h-8 bg-gray-100 text-gray-700 px-3 flex shrink-0 items-center'>
         <p>{props.directory}</p>
       </div>
       <div
-        className="relative flex flex-row flex-wrap w-full h-full content-start p-2 overflow-scroll"
+        className='relative flex flex-row flex-wrap w-full h-full content-start p-2 overflow-y-scroll'
         onContextMenu={() => setShowDialog(true)}
       >
         {folder?.items?.map((item, i) => (
           <OSAppFile
             key={i}
-            textColor="black"
+            textColor='black'
             props={{
               name:
                 item.name +
@@ -143,7 +143,7 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
                 props.onDirectory(item.path);
               } else if ("extension" in item) {
                 const id = apps.findIndex(
-                  (app) => app.constructor === CodeEditor,
+                  (app) => app.constructor === CodeEditor
                 );
                 dispatch(
                   launchApp({
@@ -152,7 +152,7 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
                       "--file",
                       `${folder!.path}/${item.name + (item as File).extension}`,
                     ],
-                  }),
+                  })
                 );
               }
             }}

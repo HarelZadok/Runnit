@@ -40,7 +40,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
   // Retrieve size and position settings from Redux
   const taskbarHeight = useAppSelector((state) => state.settings.taskbarHeight);
   const instance = useAppSelector((state) => state.windowManager.openApps).find(
-    (cApp) => cApp.pid === app.getAppProps().appFile.id,
+    (cApp) => cApp.pid === app.getAppProps().appFile.id
   )!;
   const maximized = instance.isMaximized;
   const minimized = instance.isMinimized;
@@ -115,26 +115,34 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
       width: width,
       height: height,
       position: position,
+      isMaximized: maximized,
     };
     setSetting("windowPrefs" + app.getAppProps().appFile.id, newPrefs);
-  }, [width, height, position, app]);
+  }, [width, height, position, app, maximized]);
+
+  const [prevPos, setPrevPos] = useState<{ x: number; y: number } | null>();
 
   // Setup drag, maximize, minimize, and close handlers on the OSApp instance
   useEffect(() => {
     const instance = appRef.current;
     if (!instance) return;
 
+    instance.isMaximized = maximized;
+
     // Drag start: capture initial mouse
     instance.setOnGrabStart((e) => {
       setIsGrabbing(true);
-      document.body.style.cursor = "move";
+      const leftOffset = e.clientX / window.innerWidth;
+      setPrevPos({ x: position.x, y: position.y });
       if (maximized) {
+        instance.isMaximized = false;
         dispatch(unmaximizeApp(app.getAppProps().appFile.id));
         setPosition({
-          x: e.clientX - width / 2,
+          x: e.clientX - width * leftOffset,
           y: e.clientY - 20,
         });
       }
+      document.body.style.cursor = "move";
       prevMouseRef.current = { x: e.clientX, y: e.clientY };
     });
     // Dragging: update position incrementally
@@ -159,11 +167,17 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
       dispatch(unindicateFullscreen());
       setIsGrabbing(false);
       document.body.style.cursor = "auto";
-      if (e.clientY <= 10) dispatch(maximizeApp(app.getAppProps().appFile.id));
+      if (e.clientY <= 10) {
+        setPosition(prevPos!);
+        instance.isMaximized = true;
+        dispatch(maximizeApp(app.getAppProps().appFile.id));
+      }
+      setPrevPos(null);
     });
 
     // Maximize toggle
     instance.setOnMaximize(() => {
+      instance.isMaximized = !maximized;
       if (!maximized) dispatch(maximizeApp(app.getAppProps().appFile.id));
       else dispatch(unmaximizeApp(app.getAppProps().appFile.id));
     });
@@ -254,6 +268,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
     position.x,
     position.y,
     width,
+    prevPos,
   ]);
 
   // Render window container with dynamic styles based on state
@@ -264,10 +279,10 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
 					absolute
 					backdrop-blur-2xl
 					overflow-hidden
-					transition-all
 					duration-300
 					rounded-${maximized ? "none" : "lg"}
 					border-[1px]
+          origin-center
 			`}
         ref={windowRef}
         style={{

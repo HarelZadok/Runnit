@@ -26,7 +26,7 @@ export default class Files extends OSApp {
 
   body(): React.ReactElement {
     return (
-      <div className="h-full w-full bg-white flex flex-row">
+      <div className='h-full w-full bg-white flex flex-row'>
         <DirectoriesPane onDirectory={this.handleOnDirectory} />
         <DirectoryDetailsPane
           onDirectory={this.handleOnDirectory}
