@@ -2,7 +2,7 @@
 
 Runnit OS is a desktop-style environment built with React and TypeScript that simulates a traditional desktop experience on the web.
 
-## What's New in v0.2.5
+## What's New in v0.2.6
 
 ### 🎨 Enhanced Update Notification System
 
