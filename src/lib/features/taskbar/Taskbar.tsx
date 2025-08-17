@@ -6,18 +6,29 @@ import Image from "next/image";
 import {
   closeApp,
   launchApp,
+  minimizeApp,
   toggleAppLauncher,
 } from "@/lib/features/windowManager/windowManagerSlice";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { OSAppFileProps } from "@/lib/features/OSApp/OSAppFile";
 import {
+  initTaskbar,
   pinTaskbarApp,
   unpinTaskbarApp,
 } from "@/lib/features/taskbar/taskbarSlice";
+import { canAccessStorage } from "@/lib/functions";
 
 export default function Taskbar() {
   const taskbarHeight = useAppSelector((state) => state.settings.taskbarHeight);
-  const pinnedApps = useAppSelector((state) => state.taskbar.pinnedTaskbarApps);
+  const pinnedApps = useAppSelector((state) =>
+    canAccessStorage() ? state.taskbar.pinnedTaskbarApps : []
+  );
   const openedApps = useAppSelector(
     (state) => state.taskbar.openedTaskbarApps
   ).filter((app) => !pinnedApps.some((cApp) => cApp.id === app.id));
@@ -44,6 +55,15 @@ export default function Taskbar() {
     }
   }, [openedAppsInstances]);
 
+  useLayoutEffect(() => {
+    dispatch(initTaskbar());
+  }, [dispatch]);
+
+  const totalItems = 1 + pinnedApps.length + openedApps.length;
+  const itemWidth = taskbarHeight - 35;
+  const padding = 8; // px-1 = 4px each side, plus some spacing
+  const calculatedWidth = totalItems * itemWidth + padding * 2;
+
   return (
     <div
       className='absolute w-full px-10 pb-8 flex items-center justify-center transition-all duration-300'
@@ -55,25 +75,28 @@ export default function Taskbar() {
       <div
         onMouseDown={(e) => e.stopPropagation()}
         className='
-			relative
-			w-max
-			h-full
-			rounded-2xl
-			items-center
-			justify-center
-			flex
-			flex-row
-			px-1
-			z-20000
-			before:rounded-2xl
-			before:bg-[#ffffff90]
-			before:absolute
-			before:backdrop-blur-3xl
-			before:backdrop-brightness-60
-			before:w-full
-			before:h-full
-			before:-z-1
-			'
+          relative
+          h-full
+          rounded-2xl
+          items-center
+          justify-center
+          flex
+          flex-row
+          px-1
+          z-20000
+          transition-all
+          duration-400
+          before:rounded-2xl
+          before:bg-[#ffffff90]
+          before:absolute
+          before:backdrop-blur-3xl
+          before:backdrop-brightness-60
+          before:inset-0
+          before:-z-1
+        '
+        style={{
+          width: `${calculatedWidth}px`,
+        }}
       >
         <div
           className='group cursor-pointer'
@@ -88,6 +111,7 @@ export default function Taskbar() {
 						group-hover:-translate-y-1.5 
 						relative 
 						flex 
+            flex-1
 						flex-col 
 						items-center
 					`}
@@ -212,7 +236,11 @@ const TaskbarIcon = (props: {
         onContextMenu={onMenu}
         onClick={() => {
           if (isAppLauncherPresent) dispatch(toggleAppLauncher());
-          dispatch(launchApp({ id: props.app.id }));
+          if (props.focusedAppId === props.app.id) {
+            dispatch(minimizeApp(props.app.id));
+          } else {
+            dispatch(launchApp({ id: props.app.id }));
+          }
         }}
       >
         <div
@@ -302,7 +330,19 @@ const PinnedTaskbarIcon = (props: {
           )}
         </div>
       )}
-      <div className='group cursor-pointer' ref={divRef} onContextMenu={onMenu}>
+      <div
+        className='group cursor-pointer'
+        ref={divRef}
+        onContextMenu={onMenu}
+        onClick={() => {
+          if (isAppLauncherPresent) dispatch(toggleAppLauncher());
+          if (props.focusedAppId === props.app.id) {
+            dispatch(minimizeApp(props.app.id));
+          } else {
+            dispatch(launchApp({ id: props.app.id }));
+          }
+        }}
+      >
         <div
           className='transition-transform duration-100 group-hover:-translate-y-1.5 relative flex-col flex items-center justify-center'
           style={{
@@ -318,10 +358,6 @@ const PinnedTaskbarIcon = (props: {
             alt=''
             width={taskbarHeight - 45}
             height={taskbarHeight - 45}
-            onClick={() => {
-              if (isAppLauncherPresent) dispatch(toggleAppLauncher());
-              dispatch(launchApp({ id: props.app.id }));
-            }}
           />
           {openApps.some((cApp) => cApp.pid === props.app.id) && (
             <FocusBar isFocused={props.focusedAppId === props.app.id} />

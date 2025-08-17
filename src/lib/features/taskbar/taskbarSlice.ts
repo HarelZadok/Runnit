@@ -14,7 +14,7 @@ export interface taskbarState {
 }
 
 const initialState: taskbarState = {
-  pinnedTaskbarApps: getSetting("pinnedTaskbarApps") ?? [],
+  pinnedTaskbarApps: [],
   openedTaskbarApps: [],
   hideRate: 0,
   forceShow: false,
@@ -24,6 +24,9 @@ const taskbarSlice = createSlice({
   name: "taskbar",
   initialState,
   reducers: {
+    initTaskbar: (state) => {
+      state.pinnedTaskbarApps = getSetting("pinnedTaskbarApps") ?? [];
+    },
     pinTaskbarApp: (state, app: PayloadAction<OSAppFileProps>) => {
       state.pinnedTaskbarApps.push(app.payload);
       setSetting("pinnedTaskbarApps", state.pinnedTaskbarApps);
@@ -58,6 +61,7 @@ const taskbarSlice = createSlice({
 });
 
 export const {
+  initTaskbar,
   pinTaskbarApp,
   unpinTaskbarApp,
   addOpenTaskbarApp,

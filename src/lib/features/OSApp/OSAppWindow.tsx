@@ -59,6 +59,26 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
   const prevMouseRef = useRef({ x: 0, y: 0 });
   const windowRef = useRef<HTMLDivElement>(null);
   const [isHidingTaskbar, setIsHidingTaskbar] = useState(false);
+  const [startOpacity, setStartOpacity] = useState(0);
+
+  const pinnedApps = useAppSelector((state) => state.taskbar.pinnedTaskbarApps);
+  const openApps = useAppSelector((state) => state.taskbar.openedTaskbarApps);
+  const taskbarApps = pinnedApps.concat(
+    openApps.filter((curr) =>
+      pinnedApps.some((pinned) => pinned.id !== curr.id)
+    )
+  );
+  const iconWidth =
+    useAppSelector((state) => state.settings.taskbarHeight) - 35;
+  const taskbarWidth = taskbarApps.length * iconWidth + 70;
+  const taskbarIconIndex = taskbarApps.findIndex(
+    (curr) => curr.id === app.appFile.id
+  );
+  const iconPosition =
+    window.innerWidth / 2 -
+    taskbarWidth / 2 +
+    iconWidth * (taskbarIconIndex + 2) -
+    iconWidth / 2;
 
   const appRef = useRef<OSApp>(null);
   const AppComponent = app.constructor as React.ComponentClass<
@@ -67,6 +87,10 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
   >;
 
   const hasTriggeredHideRef = useRef(false);
+
+  useEffect(() => {
+    setStartOpacity(1);
+  }, []);
 
   useEffect(() => {
     const bottom = position.y + height;
@@ -188,7 +212,8 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
     });
     // Close window
     instance.setOnClose(() => {
-      dispatch(closeApp(app.getAppProps().appFile.id));
+      setStartOpacity(0);
+      setTimeout(() => dispatch(closeApp(app.getAppProps().appFile.id)), 300);
     });
     instance.setOnResizeStart(() => {
       setIsResizing(true);
@@ -287,7 +312,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
         ref={windowRef}
         style={{
           borderColor: minimized ? "transparent" : "black",
-          left: minimized ? window.innerWidth / 2 : maximized ? 0 : position.x,
+          left: minimized ? iconPosition : maximized ? 0 : position.x,
           top: minimized
             ? window.innerHeight - taskbarHeight
             : maximized
@@ -296,6 +321,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
           width: minimized ? 0 : maximized ? window.innerWidth : width,
           height: minimized ? 0 : maximized ? window.innerHeight : height,
           zIndex: zIndex,
+          opacity: startOpacity,
           transitionProperty: isGrabbing || isResizing ? "none" : "all",
         }}
       >

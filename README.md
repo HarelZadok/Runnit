@@ -1,19 +1,6 @@
 # Runnit OS
 
-Runnit OS is a desktop-style environment built w## Usage Guide
-
-1. Double-click or select + press Enter on desktop icons to launch apps
-2. Drag icons on the desktop to reorganize as you prefer
-3. Use the App Launcher in the taskbar to search, pin, and open applications
-4. Click and drag window title bars to move windows; drag edges or corners to resize
-5. Minimize, maximize, or close windows via the title bar controls
-6. Right-click on the desktop to open the context menu for wallpaper settings and refreshing
-7. Browse files in the Files app; deleted items are sent to the Trash for recovery or permanent removal
-8. Open the Settings app from the taskbar to customize themes, wallpaper, and shortcuts
-9. **NEW**: Use the Code Editor to write and edit code with full TypeScript/React support
-10. **NEW**: View portfolios and projects in the Portfolio app
-11. **PERSISTENT**: Your work is automatically saved - close and reopen your browser to see everything exactly as you left its and TypeScript that simulates a traditional desktop
-    experience on the web.
+Runnit OS is a desktop-style environment built with React and TypeScript that simulates a traditional desktop experience on the web.
 
 ## What's New in v0.2.5
 
@@ -54,6 +41,13 @@ Runnit OS is a desktop-style environment built w## Usage Guide
 - Settings and preferences persist across sessions
 - Seamless experience that maintains continuity like a real operating system
 
+### 🪟 Enhanced Window Management
+
+- **Individual taskbar minimization** - Each window gets its own taskbar icon when minimized
+- **Keyboard shortcuts** - Use Ctrl+Tab to cycle through windows and Ctrl+W to close the focused window
+- **Smooth animations** - Windows fade in when opening and fade out when closing
+- **Smart taskbar interactions** - Click a focused window's taskbar icon to minimize and unfocus it
+
 ### ⚡ Technology Stack Upgrades
 
 - **Next.js 15.4.3** with Turbopack for ultra-fast development
@@ -75,7 +69,8 @@ Runnit OS is a desktop-style environment built w## Usage Guide
 - **Persistent Desktop Environment**: Your complete OS state, including desktop layout, files, and settings, automatically saves and restores between browser sessions
 - Customizable desktop: change wallpaper and rearrange draggable icons
 - Taskbar with searchable app launcher, running app indicators, and quick access to apps
-- Advanced window manager: open multiple resizable, movable, minimizable, and maximizable windows with snap support
+- Advanced window manager: open multiple resizable, movable, minimizable, and maximizable windows with snap support and smooth animations
+- **Keyboard shortcuts**: Ctrl+Tab to switch windows, Ctrl+W to close focused window
 - Built-in OS apps:
   - **Code Editor**: Professional Monaco-based code editor with TypeScript support
   - **Files**: Navigate and manage a complete virtual file system
@@ -93,9 +88,14 @@ Runnit OS is a desktop-style environment built w## Usage Guide
 3. Use the App Launcher in the taskbar to search, pin, and open applications
 4. Click and drag window title bars to move windows; drag edges or corners to resize
 5. Minimize, maximize, or close windows via the title bar controls
-6. Right-click on the desktop to open the context menu for wallpaper settings and refreshing
-7. Browse files in the Files app; deleted items are sent to the Bin for recovery or permanent removal
-8. Open the Settings app from the taskbar to customize themes, wallpapers, and shortcuts
+6. **Use keyboard shortcuts**: Ctrl+Tab to cycle through open windows, Ctrl+W to close the focused window
+7. **Click taskbar icons**: Click a minimized app to restore it, or click a focused app to minimize it
+8. Right-click on the desktop to open the context menu for wallpaper settings and refreshing
+9. Browse files in the Files app; deleted items are sent to the Trash for recovery or permanent removal
+10. Open the Settings app from the taskbar to customize themes, wallpaper, and shortcuts
+11. **NEW**: Use the Code Editor to write and edit code with full TypeScript/React support
+12. **NEW**: View portfolios and projects in the Portfolio app
+13. **PERSISTENT**: Your work is automatically saved - close and reopen your browser to see everything exactly as you left it
 
 ## Repository Structure
 

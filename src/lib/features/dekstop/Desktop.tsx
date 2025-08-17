@@ -24,7 +24,10 @@ import {
   showTaskbar,
 } from "@/lib/features/taskbar/taskbarSlice";
 import AppLauncher from "@/lib/features/appLauncher/AppLauncher";
-import { launchApp } from "@/lib/features/windowManager/windowManagerSlice";
+import {
+  closeApp,
+  launchApp,
+} from "@/lib/features/windowManager/windowManagerSlice";
 import { changeDesktopBackground } from "@/lib/features/settings/settingsSlice";
 import { canAccessStorage, getSetting } from "@/lib/functions";
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
@@ -56,6 +59,7 @@ export default function Desktop() {
   const [selectionYStart, setSelectionYStart] = useState(-1);
   const [selectionXEnd, setSelectionXEnd] = useState(-1);
   const [selectionYEnd, setSelectionYEnd] = useState(-1);
+  const [fullscreen, setFullscreen] = useState(false);
   const itemRefs = useRef<HTMLDivElement[]>([]);
   const dispatch = useAppDispatch();
 
@@ -219,7 +223,7 @@ export default function Desktop() {
     const screenHeight = window.innerHeight;
     const desktopHeight = screenHeight - taskbarHeight;
     setColumnHeight(desktopHeight / (iconScale + 50) - 1);
-  }, [iconScale, taskbarHeight]);
+  }, [iconScale, taskbarHeight, fullscreen]);
 
   const showApp = useCallback((id: number, args?: string[]) => {
     const app = appRegistry.getClass(id);
@@ -247,6 +251,44 @@ export default function Desktop() {
   useEffect(() => {
     OSFileSystem.init();
   }, []);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      e.preventDefault();
+      if (e.key === "F5") {
+        window.location.reload();
+      } else if (e.key === "F11") {
+        document.body.requestFullscreen();
+      } else if (e.ctrlKey) {
+        if (e.key === "Tab") {
+          const focusedIndex = openApps.findIndex((app) => app.isFocused);
+          if (focusedIndex >= 0) {
+            if (focusedIndex + 1 >= openApps.length) {
+              dispatch(launchApp({ id: openApps[0].pid }));
+            } else {
+              dispatch(launchApp({ id: openApps[focusedIndex + 1].pid }));
+            }
+          }
+        }
+        if (e.key === "w") {
+          const focusedIndex = openApps.findIndex((app) => app.isFocused);
+          if (focusedIndex >= 0) {
+            dispatch(closeApp(openApps[focusedIndex].pid));
+          }
+        }
+      }
+    };
+
+    document.body.onkeydown = onKeyDown;
+    document.onfullscreenchange = () => {
+      setFullscreen(document.fullscreenElement !== null);
+    };
+
+    return () => {
+      document.body.onkeydown = null;
+      document.onfullscreenchange = null;
+    };
+  }, [dispatch, openApps]);
 
   const openFile = useOpenFile();
 
