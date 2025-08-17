@@ -14,4 +14,9 @@ export const apps: OSApp[] = [
   new Portfolio(),
 ];
 
+
 apps.map((app) => appRegistry.registerApp(app));
+
+export const getIdFromAppClass = (appClass: typeof OSApp) => {
+  return apps.findIndex((app) => app.constructor === appClass);
+}

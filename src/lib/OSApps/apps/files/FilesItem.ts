@@ -1,7 +1,8 @@
+import { OSAppFileProps } from "@/lib/features/OSApp/OSAppFile";
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
 
 export default abstract class FilesItem {
-  public id: number;
+  public readonly id: number;
   public name: string;
   public path: string;
   public icon: string;
@@ -26,6 +27,15 @@ export class File extends FilesItem {
     this.dateOfCreation = Date.now();
     this.extension = extension;
     this.value = "";
+  }
+}
+
+export class AppShortcut extends File {
+  public readonly appProps: OSAppFileProps;
+
+  constructor(appProps: OSAppFileProps, path: string) {
+    super(appProps.name, path, ".app", appProps.icon);
+    this.appProps = appProps;
   }
 }
 

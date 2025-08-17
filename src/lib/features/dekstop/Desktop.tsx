@@ -1,6 +1,6 @@
 "use client";
 
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { useAppDispatch, useAppSelector, useOpenFile } from "@/lib/hooks";
 import { OSAppFile } from "@/lib/features/OSApp/OSAppFile";
 import React, {
   useCallback,
@@ -11,10 +11,9 @@ import React, {
 } from "react";
 import Taskbar from "@/lib/features/taskbar/Taskbar";
 import {
-  addActiveDesktopApp,
+  addActiveDesktopApp as addActiveDesktopFile,
   clearActiveDesktopApps,
-  removeActiveDesktopApp,
-  removeDesktopApp,
+  removeActiveDesktopApp as removeActiveDesktopFile,
   setActiveDesktopApps,
 } from "@/lib/features/dekstop/desktopSlice";
 import OSAppWindow, { AppWindowProps } from "@/lib/features/OSApp/OSAppWindow";
@@ -31,11 +30,18 @@ import { canAccessStorage, getSetting } from "@/lib/functions";
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
 import packageInfo from "@/../package.json";
 import UpdateNotifier from "@/lib/features/updateNotifier/UpdateNotifier";
+import FilesItem from "@/lib/OSApps/apps/files/FilesItem";
+import { getIdFromAppClass } from "@/lib/OSApps/AppList";
+import Files from "@/lib/OSApps/apps/files/Files";
 
 export default function Desktop() {
-  const apps = useAppSelector((state) => state.desktop.desktopApps);
+  const [files, setFiles] = useState<FilesItem[]>(
+    OSFileSystem.getFolder("/home/desktop")?.items ?? []
+  );
   const openApps = useAppSelector((state) => state.windowManager.openApps);
-  const activeApps = useAppSelector((state) => state.desktop.activeDesktopApps);
+  const activeFiles = useAppSelector(
+    (state) => state.desktop.activeDesktopFiles
+  );
   const background = useAppSelector((state) => state.settings.background);
   const taskbarHeight = useAppSelector((state) => state.settings.taskbarHeight);
   const iconScale = useAppSelector((state) => state.settings.iconScale);
@@ -58,6 +64,17 @@ export default function Desktop() {
     if (canAccessStorage() && getSetting("version") !== packageInfo.version) {
       updateRef.current = true;
     }
+  }, []);
+
+  useEffect(() => {
+    const onFilesUpdate = () => {
+      const items = OSFileSystem.getFolder("/home/desktop")?.items ?? [];
+      setFiles(items);
+    };
+
+    OSFileSystem.addListener(onFilesUpdate);
+
+    return () => OSFileSystem.removeListener(onFilesUpdate);
   }, []);
 
   function getElementsInSelectionBox(
@@ -93,8 +110,8 @@ export default function Desktop() {
       itemRefs.current
     );
     const overlappingIds = overlapping.map((el) => Number(el.dataset.id));
-    return apps.filter((app) => overlappingIds.includes(app.id));
-  }, [apps, selectionXEnd, selectionXStart, selectionYEnd, selectionYStart]);
+    return files.filter((app) => overlappingIds.includes(app.id));
+  }, [files, selectionXEnd, selectionXStart, selectionYEnd, selectionYStart]);
 
   const onContextMenu = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -162,7 +179,9 @@ export default function Desktop() {
       selectionYStart !== -1 &&
       selectionYEnd !== -1
     ) {
-      dispatch(setActiveDesktopApps(getAppsInSelectionBox()));
+      dispatch(
+        setActiveDesktopApps(getAppsInSelectionBox().flatMap((item) => item.id))
+      );
       setSelectionXStart(-1);
       setSelectionXEnd(-1);
       setSelectionYStart(-1);
@@ -226,16 +245,10 @@ export default function Desktop() {
   }, []);
 
   useEffect(() => {
-    const deletedApps = apps.filter(
-      (app) => !appRegistry.apps.some((cApp) => cApp.id === app.id)
-    );
-
-    deletedApps.map((app) => dispatch(removeDesktopApp(app)));
-  }, [apps, dispatch]);
-
-  useEffect(() => {
     OSFileSystem.init();
   }, []);
+
+  const openFile = useOpenFile();
 
   return (
     <div
@@ -277,31 +290,43 @@ export default function Desktop() {
             width: 0,
           }}
         >
-          {apps.map((app, i) => {
-            const appSelect = activeApps.some((cApp) => cApp.id === app.id);
+          {files.map((file, i) => {
+            const fileSelect = activeFiles.some((cApp) => cApp === file.id);
+
             return (
               <OSAppFile
-                key={app.id}
-                props={app}
+                key={file.id}
+                props={file}
                 onMenu={() => {}}
                 onClick={(event) => {
                   if (event.ctrlKey) {
-                    if (!appSelect) dispatch(addActiveDesktopApp(app));
-                    else dispatch(removeActiveDesktopApp(app));
-                  } else if (appSelect) {
+                    if (!fileSelect) dispatch(addActiveDesktopFile(file.id));
+                    else dispatch(removeActiveDesktopFile(file.id));
+                  } else if (fileSelect) {
                     // Placeholder: rename logic could go here
                   } else {
                     dispatch(clearActiveDesktopApps());
-                    dispatch(addActiveDesktopApp(app));
+                    dispatch(addActiveDesktopFile(file.id));
                   }
                 }}
                 onDoubleClick={() => {
-                  for (const app of activeApps) {
-                    dispatch(clearActiveDesktopApps());
-                    dispatch(launchApp({ id: app.id }));
+                  dispatch(clearActiveDesktopApps());
+                  for (const fileId of activeFiles) {
+                    const cFile = files.find((cApp) => cApp.id === fileId)!;
+                    if ("items" in cFile) {
+                      const id = getIdFromAppClass(Files);
+                      dispatch(
+                        launchApp({
+                          id: id,
+                          args: ["--folder", cFile.path],
+                        })
+                      );
+                    } else {
+                      openFile(cFile);
+                    }
                   }
                 }}
-                isActive={appSelect}
+                isActive={fileSelect}
                 ref={(el) => {
                   if (el) itemRefs.current[i] = el;
                 }}

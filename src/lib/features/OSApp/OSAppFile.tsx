@@ -32,6 +32,11 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
     const [isTrashFilled, setIsTrashFilled] = useState(
       OSFileSystem.isTrashFilled()
     );
+    const name = (() => {
+      if ("extension" in props.props && props.props.extension !== ".app")
+        return props.props.name + props.props.extension;
+      return props.props.name;
+    })();
 
     useEffect(() => {
       const updateTrashStatus = () =>
@@ -81,7 +86,7 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
         onContextMenu={onMenu}
         ref={ref}
         data-id={props.props.id}
-        title={props.props.name}
+        title={name}
         style={{
           height: iconScale + (props.height ?? 50),
           width: iconScale + (props.width ?? 10),
@@ -110,7 +115,7 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
             overflowWrap: "anywhere",
           }}
           dangerouslySetInnerHTML={{
-            __html: props.props.name.replace(/\.([^.]+)$/, "<wbr>.$1"),
+            __html: name.replace(/\.([^.]+)$/, "<wbr>.$1"),
           }}
         />
       </div>

@@ -8,10 +8,8 @@ import {
 } from "@/lib/features/windowManager/windowManagerSlice";
 import appRegistry from "@/lib/OSApps/AppRegistry";
 import { OSAppFile, OSAppFileProps } from "@/lib/features/OSApp/OSAppFile";
-import {
-  addDesktopApp,
-  removeDesktopApp,
-} from "@/lib/features/dekstop/desktopSlice";
+import FilesItem, { AppShortcut } from "@/lib/OSApps/apps/files/FilesItem";
+import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
 
 export default function AppLauncher() {
   const taskbarHeight = useAppSelector((state) => state.settings.taskbarHeight);
@@ -25,8 +23,20 @@ export default function AppLauncher() {
   const [width, setWidth] = useState(0);
   const [query, setQuery] = useState("");
   const [queryApps, setQueryApps] = useState<OSAppFileProps[]>([]);
-  const desktopApps = useAppSelector((state) => state.desktop.desktopApps);
+  const [desktopItems, setDesktopItems] = useState<FilesItem[]>(
+    OSFileSystem.getFolder("/home/desktop")?.items ?? []
+  );
   const [activeIndex] = useState(0);
+
+  useEffect(() => {
+    const onFilesUpdate = () => {
+      setDesktopItems(OSFileSystem.getFolder("/home/desktop")?.items ?? []);
+    };
+
+    OSFileSystem.addListener(onFilesUpdate);
+
+    return () => OSFileSystem.removeListener(onFilesUpdate);
+  }, []);
 
   useEffect(() => {
     let registeredApps = appRegistry.apps.flatMap((app) => app.app.appFile);
@@ -108,9 +118,17 @@ export default function AppLauncher() {
               textColor='black'
               props={app}
               onMenu={() => {
-                if (!desktopApps.some((cApp) => cApp.id === app.id))
-                  dispatch(addDesktopApp(app));
-                else dispatch(removeDesktopApp(app));
+                const shortcut = desktopItems
+                  .filter((item) => "appProps" in item)
+                  .find(
+                    (cApp) => (cApp as AppShortcut).appProps.id === app.id
+                  ) as AppShortcut | undefined;
+                console.log(shortcut);
+                if (!shortcut)
+                  OSFileSystem.createFile(
+                    new AppShortcut(app, "/home/desktop/" + app.name)
+                  );
+                else OSFileSystem.deleteFile(shortcut);
               }}
               onClick={() => {
                 dispatch(toggleAppLauncher());

@@ -1,12 +1,9 @@
 import OSApp, { OSAppProps } from "@/lib/features/OSApp/OSApp";
-import Editor from "@monaco-editor/react";
-import { editor } from "monaco-editor";
-import React, { createRef } from "react";
+import React from "react";
 import { FaPlay } from "react-icons/fa";
+import EditorComponent from "./EditorComponent";
 
 export default class CodeEditor extends OSApp {
-  private editorRef = createRef<editor.IStandaloneCodeEditor>();
-
   constructor(props?: OSAppProps) {
     super(props);
 
@@ -18,19 +15,7 @@ export default class CodeEditor extends OSApp {
     this.addHeaderTrailingItem(<this.StartButton />);
   }
 
-  body() {
-    return (
-      <div className='w-full h-full'>
-        <Editor
-          width='100%'
-          height='100%'
-          defaultLanguage='typescript'
-          defaultValue={this.args[0] ?? ""}
-          onMount={this.handleEditorDidMount}
-        />
-      </div>
-    );
-  }
+  body = () => <EditorComponent args={this.args} />;
 
   private StartButton = () => {
     return (
@@ -44,9 +29,5 @@ export default class CodeEditor extends OSApp {
         <div className='bg-gray-500 h-[70%] w-[1px] mx-2' />
       </div>
     );
-  };
-
-  private handleEditorDidMount = (editor: editor.IStandaloneCodeEditor) => {
-    this.editorRef.current = editor;
   };
 }

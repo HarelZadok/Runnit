@@ -1,63 +1,37 @@
 // desktopSlice.ts: Redux slice for managing desktop icons and active selections
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { OSAppFileProps } from "@/lib/features/OSApp/OSAppFile";
-import { getSetting, setSetting } from "@/lib/functions";
 
 export interface desktopState {
-  desktopApps: OSAppFileProps[];
-  activeDesktopApps: OSAppFileProps[];
+  activeDesktopFiles: number[];
 }
 
 const initialState: desktopState = {
-  desktopApps: getSetting("desktopApps") ?? [],
-  activeDesktopApps: [],
+  activeDesktopFiles: [],
 };
 
 export const desktopSlice = createSlice({
   name: "desktop",
   initialState,
   reducers: {
-    addDesktopApp: (state, action: PayloadAction<OSAppFileProps>) => {
-      state.desktopApps.push(action.payload);
-      setSetting("desktopApps", state.desktopApps);
-    },
-    removeDesktopApp: (state, action: PayloadAction<OSAppFileProps>) => {
-      state.desktopApps = state.desktopApps.filter(
-        (app) => app.id != action.payload.id
-      );
-      setSetting("desktopApps", state.desktopApps);
-    },
-    renameDesktopApp: (state, action: PayloadAction<[number, string]>) => {
-      const i = state.desktopApps.findIndex(
-        (app) => app.id === action.payload[0]
-      );
-      if (i !== -1) {
-        state.desktopApps[i].name = action.payload[1];
-        setSetting("desktopApps", state.desktopApps);
-      }
-    },
     clearActiveDesktopApps: (state) => {
-      state.activeDesktopApps = [];
+      state.activeDesktopFiles = [];
     },
-    addActiveDesktopApp: (state, action: PayloadAction<OSAppFileProps>) => {
-      state.activeDesktopApps.push(action.payload);
+    addActiveDesktopApp: (state, action: PayloadAction<number>) => {
+      state.activeDesktopFiles.push(action.payload);
     },
-    setActiveDesktopApps: (state, action: PayloadAction<OSAppFileProps[]>) => {
-      state.activeDesktopApps = action.payload;
+    setActiveDesktopApps: (state, action: PayloadAction<number[]>) => {
+      state.activeDesktopFiles = action.payload;
     },
-    removeActiveDesktopApp: (state, action: PayloadAction<OSAppFileProps>) => {
-      state.activeDesktopApps = state.activeDesktopApps.filter(
-        (app) => app.id !== action.payload.id
+    removeActiveDesktopApp: (state, action: PayloadAction<number>) => {
+      state.activeDesktopFiles = state.activeDesktopFiles.filter(
+        (app) => app !== action.payload
       );
     },
   },
 });
 
 export const {
-  addDesktopApp,
-  removeDesktopApp,
-  renameDesktopApp,
   clearActiveDesktopApps,
   addActiveDesktopApp,
   removeActiveDesktopApp,

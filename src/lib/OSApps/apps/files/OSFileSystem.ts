@@ -1,5 +1,5 @@
 import FilesItem, { Folder, File } from "@/lib/OSApps/apps/files/FilesItem";
-import { getSetting, setSetting } from "@/lib/functions";
+import { canAccessStorage, getSetting, setSetting } from "@/lib/functions";
 
 export class OSFileSystem {
   private static listeners: Set<() => void> = new Set();
@@ -37,6 +37,7 @@ export class OSFileSystem {
   }
 
   public static getFolder(fullPath: string): Folder | null {
+    if (!canAccessStorage()) return null;
     if (!fullPath.endsWith("/")) fullPath += "/";
     const jsonData = localStorage.getItem(fullPath);
     if (jsonData) {
@@ -46,14 +47,13 @@ export class OSFileSystem {
   }
 
   public static createFolder(directory: string): Folder | null {
-    const [path, name] = OSFileSystem.fullPathToPathAndName(directory);
+    const [path, name] = OSFileSystem.fileFullPathToPathAndName(directory);
     const newFolder = new Folder(name, path + name);
     return OSFileSystem.createFolderFrom(newFolder);
   }
 
   public static createFolderFrom(folder: Folder): Folder | null {
-    let [path] = OSFileSystem.fullPathToPathAndName(folder.path);
-    if (!path.endsWith("/")) path += "/";
+    const [path] = OSFileSystem.folderFullPathToPathAndName(folder.path);
     const parent = OSFileSystem.getFolder(path);
     if (parent) {
       parent.items.push(folder);
@@ -65,6 +65,7 @@ export class OSFileSystem {
   }
 
   public static deleteFolder(folder: Folder): boolean {
+    if (!canAccessStorage()) return false;
     let path = folder.path;
     if (!path.endsWith("/")) path += "/";
 
@@ -82,6 +83,7 @@ export class OSFileSystem {
   }
 
   public static updateFolder(folder: Folder): void {
+    if (!canAccessStorage()) return;
     let path = folder.path;
     if (!path.endsWith("/")) path += "/";
     localStorage.setItem(path, JSON.stringify(folder));
@@ -89,11 +91,11 @@ export class OSFileSystem {
   }
 
   public static getFile(fullPath: string): File | null {
-    const [path, name] = OSFileSystem.fullPathToPathAndName(fullPath);
+    const [path, name] = OSFileSystem.fileFullPathToPathAndName(fullPath);
     const folder = OSFileSystem.getFolder(path);
     if (folder) {
       const index = folder.items.findIndex((item) => {
-        if (item instanceof File) return item.name + item.extension === name;
+        if ("extension" in item) return item.name + item.extension === name;
         return false;
       });
       if (index >= 0) return folder.items[index] as File;
@@ -102,7 +104,7 @@ export class OSFileSystem {
   }
 
   public static createFile(file: File): File | null {
-    const [path] = OSFileSystem.fullPathToPathAndName(file.path);
+    const [path] = OSFileSystem.fileFullPathToPathAndName(file.path);
     const folder = OSFileSystem.getFolder(path);
     if (folder) {
       folder.items.push(file);
@@ -112,8 +114,20 @@ export class OSFileSystem {
     return null;
   }
 
+  public static updateFileValue(file: File): void {
+    const [path] = OSFileSystem.fileFullPathToPathAndName(file.path);
+    const folder = OSFileSystem.getFolder(path);
+    if (folder) {
+      const fileIndex = folder.items.findIndex((item) => item.id === file.id);
+      if (fileIndex >= 0) {
+        (folder.items[fileIndex] as File) = file;
+        OSFileSystem.updateFolder(folder);
+      }
+    }
+  }
+
   public static deleteFile(file: File): boolean {
-    const [path] = OSFileSystem.fullPathToPathAndName(file.path);
+    const [path] = OSFileSystem.fileFullPathToPathAndName(file.path);
     const folder = OSFileSystem.getFolder(path);
     if (folder) {
       const newItems = folder.items.filter((item) => item.id !== file.id);
@@ -142,7 +156,20 @@ export class OSFileSystem {
     return OSFileSystem.move(item, "/trash");
   }
 
-  public static fullPathToPathAndName(fullPath: string): [string, string] {
+  public static fileFullPathToPathAndName(fullPath: string): [string, string] {
+    const path = fullPath.substring(0, fullPath.lastIndexOf("/") + 1);
+    const name = fullPath.substring(
+      fullPath.lastIndexOf("/") + 1,
+      fullPath.length
+    );
+    return [path, name];
+  }
+
+  public static folderFullPathToPathAndName(
+    fullPath: string
+  ): [string, string] {
+    if (fullPath.endsWith("/"))
+      fullPath = fullPath.substring(0, fullPath.length - 1);
     const path = fullPath.substring(0, fullPath.lastIndexOf("/") + 1);
     const name = fullPath.substring(
       fullPath.lastIndexOf("/") + 1,

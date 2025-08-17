@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Folder, File } from "@/lib/OSApps/apps/files/FilesItem";
 import { OSAppFile } from "@/lib/features/OSApp/OSAppFile";
-import { useAppDispatch } from "@/lib/hooks";
-import { launchApp } from "@/lib/features/windowManager/windowManagerSlice";
-import { apps } from "@/lib/OSApps/AppList";
-import CodeEditor from "@/lib/OSApps/apps/code_editor/CodeEditor";
+import { useOpenFile } from "@/lib/hooks";
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
 
 interface DirectoryDetailsPaneProps {
@@ -51,8 +48,6 @@ const CreateFileDialog = ({
 export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
   const [folder, setFolder] = useState<Folder>();
   const [showDialog, setShowDialog] = useState(false);
-
-  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const f = OSFileSystem.getFolder(props.directory);
@@ -106,6 +101,8 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
     [folder, props.directory]
   );
 
+  const openFile = useOpenFile();
+
   return (
     <div className='w-full h-full bg-white text-black flex flex-col'>
       <div className='w-full h-8 bg-gray-100 text-gray-700 px-3 flex shrink-0 items-center'>
@@ -134,26 +131,15 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
                 items: folder.items.filter((cItem) => cItem.id !== item.id),
               };
               setFolder(updatedFolder);
-              const [path] = OSFileSystem.fullPathToPathAndName(item.path);
+              const [path] = OSFileSystem.fileFullPathToPathAndName(item.path);
               if (path === "/trash/") OSFileSystem.deleteItem(item);
               else OSFileSystem.moveToTrash(item);
             }}
             onDoubleClick={() => {
               if ("items" in item) {
                 props.onDirectory(item.path);
-              } else if ("extension" in item) {
-                const id = apps.findIndex(
-                  (app) => app.constructor === CodeEditor
-                );
-                dispatch(
-                  launchApp({
-                    id,
-                    args: [
-                      "--file",
-                      `${folder!.path}/${item.name + (item as File).extension}`,
-                    ],
-                  })
-                );
+              } else {
+                openFile(item);
               }
             }}
           />
