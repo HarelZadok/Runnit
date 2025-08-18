@@ -63,11 +63,14 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
 
   const pinnedApps = useAppSelector((state) => state.taskbar.pinnedTaskbarApps);
   const openApps = useAppSelector((state) => state.taskbar.openedTaskbarApps);
-  const taskbarApps = pinnedApps.concat(
-    openApps.filter((curr) =>
-      pinnedApps.some((pinned) => pinned.id !== curr.id)
-    )
-  );
+  const taskbarApps =
+    pinnedApps.length > 0
+      ? pinnedApps.concat(
+          openApps.filter((curr) =>
+            pinnedApps.some((pinned) => pinned.id !== curr.id)
+          )
+        )
+      : openApps;
   const iconWidth =
     useAppSelector((state) => state.settings.taskbarHeight) - 35;
   const taskbarWidth = taskbarApps.length * iconWidth + 70;
@@ -89,7 +92,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
   const hasTriggeredHideRef = useRef(false);
 
   useEffect(() => {
-    setStartOpacity(1);
+    setTimeout(() => setStartOpacity(1), 1);
   }, []);
 
   useEffect(() => {
@@ -302,7 +305,6 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
       <div
         className={`
 					absolute
-					backdrop-blur-2xl
 					overflow-hidden
 					duration-300
 					rounded-${maximized ? "none" : "lg"}
@@ -334,7 +336,13 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
 					w-full
 					h-full
 					select-none
-					${instance.isFocused ? "opacity-100" : isMouseOver ? "opacity-85" : "opacity-75"}
+          after:w-full
+          after:h-full
+          after:absolute
+          after:backdrop-brightness-50
+          after:transition-all
+          after:pointer-events-none
+					${instance.isFocused ? "after:opacity-0" : isMouseOver ? "after:opacity-30" : "after:opacity-60"}
 				`}
           onMouseDown={(e) => {
             e.stopPropagation();

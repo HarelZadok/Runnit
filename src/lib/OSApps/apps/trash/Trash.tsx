@@ -11,9 +11,7 @@ export default class Trash extends OSApp {
     });
   }
 
-  body(): React.ReactElement {
-    return <TrashComponent />;
-  }
+  body = () => <TrashComponent />;
 }
 
 const TrashComponent = () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { cloneElement, Component, ReactElement } from "react";
+import React, { cloneElement, Component, JSX, ReactElement } from "react";
 import { OSAppFileProps } from "@/lib/features/OSApp/OSAppFile";
 import { RiCloseLargeLine } from "react-icons/ri";
 import { FiMaximize, FiMinimize } from "react-icons/fi";
@@ -78,7 +78,7 @@ export default abstract class OSApp
     this.headerTrailingItems = [];
     if (typeof window !== "undefined") {
       this.defaultWidth = window.innerWidth * 0.7;
-      this.defaultHeight = window.innerHeight * 0.7;
+      this.defaultHeight = window.innerHeight * 0.8;
     } else {
       this.defaultWidth = 1100;
       this.defaultHeight = 700;
@@ -141,10 +141,10 @@ export default abstract class OSApp
     }
   };
 
-  header(): ReactElement {
+  header(): JSX.Element {
     return (
       <div
-        className='flex flex-row justify-between items-center bg-[#252525B4] text-white'
+        className='flex flex-row justify-between items-center bg-[#25252594] text-white backdrop-blur-2xl'
         style={{ height: this.headerHeight }}
       >
         <div
@@ -192,7 +192,7 @@ export default abstract class OSApp
     );
   }
 
-  body(): ReactElement {
+  body(): JSX.Element {
     return (
       <div
         onMouseDown={(e) => e.stopPropagation()}

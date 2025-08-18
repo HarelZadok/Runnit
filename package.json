@@ -1,6 +1,6 @@
 {
   "name": "runnit",
-  "version": "0.2.6",
+  "version": "0.2.5",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -11,8 +11,10 @@
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "@reduxjs/toolkit": "^2.8.2",
+    "ace-builds": "^1.43.2",
     "next": "15.4.3",
     "react": "19.1.0",
+    "react-ace": "^14.0.1",
     "react-dom": "19.1.0",
     "react-icons": "^5.5.0",
     "react-redux": "^9.2.0"

@@ -254,12 +254,15 @@ export default function Desktop() {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      e.preventDefault();
+      if (e.key === "F12") e.preventDefault();
       if (e.key === "F5") {
+        e.preventDefault();
         window.location.reload();
       } else if (e.key === "F11") {
+        e.preventDefault();
         document.body.requestFullscreen();
       } else if (e.ctrlKey) {
+        e.preventDefault();
         if (e.key === "Tab") {
           const focusedIndex = openApps.findIndex((app) => app.isFocused);
           if (focusedIndex >= 0) {
@@ -277,6 +280,20 @@ export default function Desktop() {
           }
         }
       }
+
+      const target = e.target as HTMLElement;
+      const isTargetEditable =
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable;
+      if (isTargetEditable) {
+        if (e.ctrlKey && e.key === "a") {
+          (target as HTMLInputElement).select();
+        }
+        return;
+      }
+
+      e.preventDefault();
     };
 
     document.body.onkeydown = onKeyDown;

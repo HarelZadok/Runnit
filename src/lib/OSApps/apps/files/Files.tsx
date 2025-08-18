@@ -1,5 +1,5 @@
 import OSApp, { OSAppProps } from "@/lib/features/OSApp/OSApp";
-import React from "react";
+import React, { JSX } from "react";
 import DirectoriesPane from "@/lib/OSApps/apps/files/DirectoriesPane";
 import DirectoryDetailsPane from "@/lib/OSApps/apps/files/DirectoryDetailsPane";
 
@@ -24,7 +24,7 @@ export default class Files extends OSApp {
     this.minimumHeight = 350;
   }
 
-  body(): React.ReactElement {
+  body(): JSX.Element {
     return (
       <div className='h-full w-full bg-white flex flex-row'>
         <DirectoriesPane onDirectory={this.handleOnDirectory} />

@@ -1,4 +1,5 @@
 import OSApp, { OSAppProps } from "@/lib/features/OSApp/OSApp";
+import { JSX } from "react";
 
 interface PortfolioState {
   isLoading: boolean;
@@ -18,7 +19,7 @@ export default class Portfolio extends OSApp {
     });
   }
 
-  body() {
+  body(): JSX.Element {
     return (
       <div className='w-full h-full'>
         {this.state.isLoading && (

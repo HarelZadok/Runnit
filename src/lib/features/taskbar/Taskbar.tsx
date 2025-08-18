@@ -22,13 +22,10 @@ import {
   pinTaskbarApp,
   unpinTaskbarApp,
 } from "@/lib/features/taskbar/taskbarSlice";
-import { canAccessStorage } from "@/lib/functions";
 
 export default function Taskbar() {
   const taskbarHeight = useAppSelector((state) => state.settings.taskbarHeight);
-  const pinnedApps = useAppSelector((state) =>
-    canAccessStorage() ? state.taskbar.pinnedTaskbarApps : []
-  );
+  const pinnedApps = useAppSelector((state) => state.taskbar.pinnedTaskbarApps);
   const openedApps = useAppSelector(
     (state) => state.taskbar.openedTaskbarApps
   ).filter((app) => !pinnedApps.some((cApp) => cApp.id === app.id));
@@ -99,7 +96,7 @@ export default function Taskbar() {
         }}
       >
         <div
-          className='group cursor-pointer'
+          className='group cursor-pointer shrink-0'
           onClick={() => {
             dispatch(toggleAppLauncher());
           }}
@@ -111,7 +108,6 @@ export default function Taskbar() {
 						group-hover:-translate-y-1.5 
 						relative 
 						flex 
-            flex-1
 						flex-col 
 						items-center
 					`}
@@ -130,25 +126,34 @@ export default function Taskbar() {
         {
           // Render pinned apps with focus highlight and click to launch or restore
           pinnedApps.map((app) => (
-            <PinnedTaskbarIcon
+            <div
               key={app.id}
-              app={app}
-              focusedAppId={focusedAppId}
-              menuId={menuId}
-              setMenuId={setMenuId}
-            />
+              className='flex w-full h-full transition-all items-center justify-center'
+            >
+              <PinnedTaskbarIcon
+                app={app}
+                focusedAppId={focusedAppId}
+                menuId={menuId}
+                setMenuId={setMenuId}
+              />
+            </div>
           ))
         }
         {
           // Render opened apps with indicator bar showing focus
           openedApps.map((app) => (
-            <TaskbarIcon
+            <div
               key={app.id}
-              app={app}
-              focusedAppId={focusedAppId}
-              menuId={menuId}
-              setMenuId={setMenuId}
-            />
+              className='flex w-full h-full transition-all items-center justify-center'
+            >
+              <TaskbarIcon
+                key={app.id}
+                app={app}
+                focusedAppId={focusedAppId}
+                menuId={menuId}
+                setMenuId={setMenuId}
+              />
+            </div>
           ))
         }
       </div>
@@ -243,13 +248,7 @@ const TaskbarIcon = (props: {
           }
         }}
       >
-        <div
-          className='transition-transform duration-100 group-hover:-translate-y-1.5 relative flex-col flex items-center justify-center'
-          style={{
-            width: taskbarHeight - 35,
-            height: taskbarHeight - 35,
-          }}
-        >
+        <div className='transition-all duration-100 group-hover:-translate-y-1.5 relative flex-col flex items-center justify-center p-1'>
           <Image
             draggable={false}
             src={props.app.icon}
