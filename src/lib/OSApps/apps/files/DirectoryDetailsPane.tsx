@@ -3,6 +3,7 @@ import { Folder, File } from "@/lib/OSApps/apps/files/FilesItem";
 import { OSAppFile } from "@/lib/features/OSApp/OSAppFile";
 import { useOpenFile } from "@/lib/hooks";
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
+import { getSetting } from "@/lib/functions";
 
 interface DirectoryDetailsPaneProps {
   directory: string;
@@ -103,6 +104,14 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
 
   const openFile = useOpenFile();
 
+  const hiddenItems = folder?.items?.filter((item) =>
+    item.name.startsWith(".")
+  );
+  const visibleItems = folder?.items?.filter(
+    (item) => !item.name.startsWith(".")
+  );
+  const sortedItems = hiddenItems?.concat(visibleItems!);
+
   return (
     <div className='w-full h-full bg-white text-black flex flex-col'>
       <div className='w-full h-8 bg-gray-100 text-gray-700 px-3 flex shrink-0 items-center'>
@@ -112,38 +121,45 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
         className='relative flex flex-row flex-wrap w-full h-full content-start p-2 overflow-y-scroll'
         onContextMenu={() => setShowDialog(true)}
       >
-        {folder?.items?.map((item, i) => (
-          <OSAppFile
-            key={i}
-            textColor='black'
-            props={{
-              name:
-                item.name +
-                ("extension" in item ? (item as File).extension : ""),
-              icon: (item as File).icon,
-              id: item.id,
-            }}
-            width={40}
-            height={40}
-            onMenu={() => {
-              const updatedFolder: Folder = {
-                ...folder,
-                items: folder.items.filter((cItem) => cItem.id !== item.id),
-              };
-              setFolder(updatedFolder);
-              const [path] = OSFileSystem.fileFullPathToPathAndName(item.path);
-              if (path === "/trash/") OSFileSystem.deleteItem(item);
-              else OSFileSystem.moveToTrash(item);
-            }}
-            onDoubleClick={() => {
-              if ("items" in item) {
-                props.onDirectory(item.path);
-              } else {
-                openFile(item);
-              }
-            }}
-          />
-        ))}
+        {sortedItems?.map((item, i) => {
+          if (item.name.startsWith(".") && !getSetting("showHiddenFiles"))
+            return;
+          return (
+            <OSAppFile
+              key={i}
+              textColor='black'
+              isHidden={item.name.startsWith(".")}
+              props={{
+                name:
+                  item.name +
+                  ("extension" in item ? (item as File).extension : ""),
+                icon: (item as File).icon,
+                id: item.id,
+              }}
+              width={40}
+              height={40}
+              onMenu={() => {
+                const updatedFolder: Folder = {
+                  ...folder!,
+                  items: folder!.items.filter((cItem) => cItem.id !== item.id),
+                };
+                setFolder(updatedFolder);
+                const [path] = OSFileSystem.fileFullPathToPathAndName(
+                  item.path
+                );
+                if (path === "/trash/") OSFileSystem.deleteItem(item);
+                else OSFileSystem.moveToTrash(item);
+              }}
+              onDoubleClick={() => {
+                if ("items" in item) {
+                  props.onDirectory(item.path);
+                } else {
+                  openFile(item);
+                }
+              }}
+            />
+          );
+        })}
         {showDialog && (
           <CreateFileDialog
             createFile={createFile}

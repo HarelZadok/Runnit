@@ -2,6 +2,8 @@ import OSApp, { OSAppProps } from "@/lib/features/OSApp/OSApp";
 import React from "react";
 import { FaPlay } from "react-icons/fa";
 import EditorComponent from "./EditorComponent";
+import { OSFileSystem } from "../files/OSFileSystem";
+import { File } from "../files/FilesItem";
 
 export default class CodeEditor extends OSApp {
   constructor(props?: OSAppProps) {
@@ -12,11 +14,25 @@ export default class CodeEditor extends OSApp {
       icon: "/icons/code-editor.png",
     });
 
+    if (props && props.args) {
+      const file = this.getFileFromArgs();
+      this.headerTitle += " - " + file.name + file.extension;
+    }
+
     this.addHeaderTrailingItem(<this.StartButton />);
   }
 
-  body = () => <EditorComponent args={this.args} />;
+  private getFileFromArgs = () => {
+    const fileArgIndex = this.args.indexOf("--file");
+    if (fileArgIndex >= 0) {
+      const filePath = this.args[fileArgIndex + 1];
+      return OSFileSystem.getFile(filePath) ?? new File("temp", "/", ".txt");
+    }
+    return new File("temp", "/", ".txt");
+  };
 
+  body = () => <EditorComponent args={this.args} />;
+  
   private StartButton = () => {
     return (
       <div className='flex flex-row justify-center items-center h-full'>

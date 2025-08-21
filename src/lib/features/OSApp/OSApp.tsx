@@ -63,8 +63,12 @@ export default abstract class OSApp
   private onClose: (() => void) | undefined;
   private headerTrailingItems: ReactElement[];
 
+  protected headerTitle: string;
+
   protected constructor(props?: OSAppProps) {
     super(props ?? {});
+
+    this.headerTitle = "";
 
     // Initialize app metadata and default window size
     this.appFile = {
@@ -157,7 +161,7 @@ export default abstract class OSApp
           className='w-full h-full flex flex-row items-center px-2 gap-2'
         >
           <Image src={this.appFile.icon} alt='' width={20} height={20} />
-          <small>{this.appFile.name}</small>
+          <small>{this.headerTitle}</small>
         </div>
         <div className='h-full flex flex-row'>
           {this.headerTrailingItems.map((item, i) =>
@@ -455,6 +459,8 @@ export default abstract class OSApp
       name: name ?? this.appFile.name,
       icon: icon ?? this.appFile.icon,
     };
+
+    this.headerTitle = this.appFile.name;
   };
 
   protected addHeaderTrailingItem = (headerItem: ReactElement) => {

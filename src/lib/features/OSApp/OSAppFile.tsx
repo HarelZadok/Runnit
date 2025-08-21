@@ -23,6 +23,7 @@ export interface AdvancedOSAppFileProps {
   textColor?: TextDecorationColor;
   width?: number;
   height?: number;
+  isHidden?: boolean;
 }
 
 export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
@@ -79,7 +80,7 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
 
     return (
       <div
-        className={`flex flex-col justify-center items-center select-none hover:bg-[#77777730] rounded-md hover:backdrop-brightness-150 text-sm`}
+        className={`flex flex-col justify-center items-center select-none hover:bg-[#77777730] rounded-md hover:backdrop-brightness-150 text-sm ${props.isHidden && "opacity-60"}`}
         onClick={onClick}
         onDoubleClick={props.onDoubleClick}
         onMouseDown={onDragStart}
