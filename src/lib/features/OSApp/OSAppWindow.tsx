@@ -40,7 +40,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
   // Retrieve size and position settings from Redux
   const taskbarHeight = useAppSelector((state) => state.settings.taskbarHeight);
   const instance = useAppSelector((state) => state.windowManager.openApps).find(
-    (cApp) => cApp.pid === app.getAppProps().appFile.id
+    (cApp) => cApp.pid === app.getAppProps().appFile.id,
   )!;
   const maximized = instance.isMaximized;
   const minimized = instance.isMinimized;
@@ -67,15 +67,15 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
     pinnedApps.length > 0
       ? pinnedApps.concat(
           openApps.filter((curr) =>
-            pinnedApps.some((pinned) => pinned.id !== curr.id)
-          )
+            pinnedApps.some((pinned) => pinned.id !== curr.id),
+          ),
         )
       : openApps;
   const iconWidth =
     useAppSelector((state) => state.settings.taskbarHeight) - 35;
   const taskbarWidth = taskbarApps.length * iconWidth + 70;
   const taskbarIconIndex = taskbarApps.findIndex(
-    (curr) => curr.id === app.appFile.id
+    (curr) => curr.id === app.appFile.id,
   );
   const iconPosition =
     window.innerWidth / 2 -
@@ -183,7 +183,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
       }));
       prevMouseRef.current = { x: e.clientX, y: e.clientY };
 
-      if (e.clientY <= 10) {
+      if (e.clientY <= 10 && e.clientY >= 0) {
         dispatch(indicateFullscreen());
       } else {
         dispatch(unindicateFullscreen());
@@ -194,7 +194,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
       dispatch(unindicateFullscreen());
       setIsGrabbing(false);
       document.body.style.cursor = "auto";
-      if (e.clientY <= 10) {
+      if (e.clientY <= 10 && e.clientY >= 0) {
         setPosition(prevPos!);
         instance.isMaximized = true;
         dispatch(maximizeApp(app.getAppProps().appFile.id));
