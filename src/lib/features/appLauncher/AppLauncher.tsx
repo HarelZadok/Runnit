@@ -14,17 +14,17 @@ import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
 export default function AppLauncher() {
   const taskbarHeight = useAppSelector((state) => state.settings.taskbarHeight);
   const isPresent = useAppSelector(
-    (state) => state.windowManager.isAppLauncherPresent
+    (state) => state.windowManager.isAppLauncherPresent,
   );
   const lastUnfocusedApp = useAppSelector(
-    (state) => state.windowManager.lastUnfocusedApp
+    (state) => state.windowManager.lastUnfocusedApp,
   );
   const [height, setHeight] = useState(0);
   const [width, setWidth] = useState(0);
   const [query, setQuery] = useState("");
   const [queryApps, setQueryApps] = useState<OSAppFileProps[]>([]);
   const [desktopItems, setDesktopItems] = useState<FilesItem[]>(
-    OSFileSystem.getFolder("/home/desktop")?.items ?? []
+    OSFileSystem.getFolder("/home/desktop")?.items ?? [],
   );
   const [activeIndex] = useState(0);
 
@@ -44,7 +44,7 @@ export default function AppLauncher() {
       registeredApps = registeredApps.filter(
         (app) =>
           app.name.toLowerCase().includes(query.toLowerCase()) ||
-          query.toLowerCase().includes(app.name.toLowerCase())
+          query.toLowerCase().includes(app.name.toLowerCase()),
       );
     }
     setQueryApps(registeredApps);
@@ -73,7 +73,7 @@ export default function AppLauncher() {
 
   return (
     <div
-      className='absolute justify-center items-center flex w-full h-full z-19999'
+      className="absolute justify-center items-center flex w-full h-full z-19999"
       style={{
         pointerEvents: isPresent ? "auto" : "none",
       }}
@@ -94,39 +94,38 @@ export default function AppLauncher() {
           opacity: isPresent ? "100%" : "0%",
         }}
       >
-        <div className='w-4/5 h-16 flex-1 bg-gray-400/30 rounded-2xl justify-self-center mt-10 px-6'>
+        <div className="w-4/5 h-16 flex-1 bg-gray-400/30 rounded-2xl justify-self-center mt-10 px-6">
           <input
-            className='
+            className="
 						text-black
 						placeholder-gray-500
 						outline-0
 						w-full
 						h-full
-					'
-            type='text'
+					"
+            type="text"
             value={query}
-            placeholder='Search apps...'
+            placeholder="Search apps..."
             onChange={(e) => setQuery(e.currentTarget.value)}
           />
         </div>
-        <div className='flex flex-row flex-11 w-full justify-center items-start mt-10 gap-2 flex-wrap overflow-y-scroll no-scrollbar'>
+        <div className="flex flex-row flex-11 w-full justify-center items-start mt-10 gap-2 flex-wrap overflow-y-scroll no-scrollbar">
           {queryApps.map((app, i) => (
             <OSAppFile
               key={app.id}
               isActive={i === activeIndex}
               width={50}
-              textColor='black'
+              textColor="black"
               props={app}
               onMenu={() => {
                 const shortcut = desktopItems
                   .filter((item) => "appProps" in item)
                   .find(
-                    (cApp) => (cApp as AppShortcut).appProps.id === app.id
+                    (cApp) => (cApp as AppShortcut).appProps.id === app.id,
                   ) as AppShortcut | undefined;
-                console.log(shortcut);
                 if (!shortcut)
                   OSFileSystem.createFile(
-                    new AppShortcut(app, "/home/desktop/" + app.name)
+                    new AppShortcut(app, "/home/desktop/" + app.name),
                   );
                 else OSFileSystem.deleteFile(shortcut);
               }}
