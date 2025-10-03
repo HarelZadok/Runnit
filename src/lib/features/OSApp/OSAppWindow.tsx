@@ -56,10 +56,11 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
     x: props?.x ?? window.innerWidth / 2 - width / 2,
     y: props?.y ?? window.innerHeight / 2 - height / 2,
   });
-  const prevMouseRef = useRef({ x: 0, y: 0 });
-  const windowRef = useRef<HTMLDivElement>(null);
   const [isHidingTaskbar, setIsHidingTaskbar] = useState(false);
   const [startOpacity, setStartOpacity] = useState(0);
+
+  const prevMouseRef = useRef({ x: 0, y: 0 });
+  const windowRef = useRef<HTMLDivElement>(null);
 
   const pinnedApps = useAppSelector((state) => state.taskbar.pinnedTaskbarApps);
   const openApps = useAppSelector((state) => state.taskbar.openedTaskbarApps);

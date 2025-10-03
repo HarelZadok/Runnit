@@ -147,24 +147,11 @@ export class OSFileSystem {
   }
 
   public static renameItem(item: FilesItem, name: string): void {
-    if (name.length === 0 || name.endsWith(".")) return;
-
-    if (this.getFolder(item.path)?.items?.some((item) => item.name === name))
-      return;
-
     if (
-      name.includes("/") ||
-      name.includes("\\") ||
-      name.includes(":") ||
-      name.includes("*") ||
-      name.includes("?") ||
-      name.includes('"') ||
-      name.includes("<") ||
-      name.includes(">") ||
-      name.includes("|")
-    ) {
+      !this.getFolder(item.path) ||
+      this.isNameValid(this.getFolder(item.path)!, name)
+    )
       return;
-    }
 
     if ("items" in item) return this.renameFolder(item as Folder, name);
     else if ("extension" in item) return this.renameFile(item as File, name);
@@ -246,6 +233,24 @@ export class OSFileSystem {
 
   public static updateFileSystem(): void {
     this.listeners.forEach((callback) => callback());
+  }
+
+  public static isNameValid(folder: Folder, name: string): boolean {
+    if (name.length === 0 || name.endsWith(".")) return false;
+
+    if (folder?.items?.some((item) => item.name === name)) return false;
+
+    return !(
+      name.includes("/") ||
+      name.includes("\\") ||
+      name.includes(":") ||
+      name.includes("*") ||
+      name.includes("?") ||
+      name.includes('"') ||
+      name.includes("<") ||
+      name.includes(">") ||
+      name.includes("|")
+    );
   }
 
   private static recursiveMove(item: FilesItem, path: string): boolean {

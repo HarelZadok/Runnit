@@ -76,24 +76,7 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
 
   const createFile = useCallback(
     (name: string) => {
-      if (name.length === 0 || !name.includes(".") || name.endsWith("."))
-        return;
-
-      if (folder?.items?.some((item) => item.name === name)) return;
-
-      if (
-        name.includes("/") ||
-        name.includes("\\") ||
-        name.includes(":") ||
-        name.includes("*") ||
-        name.includes("?") ||
-        name.includes('"') ||
-        name.includes("<") ||
-        name.includes(">") ||
-        name.includes("|")
-      ) {
-        return;
-      }
+      if (!OSFileSystem.isNameValid(folder!, name)) return;
 
       setShowDialog(false);
 

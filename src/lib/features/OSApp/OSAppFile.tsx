@@ -39,14 +39,14 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
   (props, ref) => {
     // Retrieve icon scale from settings
     const iconScale = useAppSelector((state) => state.settings.iconScale);
+
     const [isTrashFilled, setIsTrashFilled] = useState(
       OSFileSystem.isTrashFilled(),
     );
-    const name = (() => {
-      if ("extension" in props.props && props.props.extension !== ".app")
-        return props.props.name + props.props.extension;
-      return props.props.name;
-    })();
+    const [shouldRenderMenu, setShouldRenderMenu] = useState(false);
+    const [menuHeight, setMenuHeight] = useState(0);
+
+    const menuContentRef = React.useRef<HTMLDivElement>(null);
 
     useEffect(() => {
       const updateTrashStatus = () =>
@@ -55,6 +55,43 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
       OSFileSystem.addListener(updateTrashStatus);
       return () => OSFileSystem.removeListener(updateTrashStatus);
     }, []);
+
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        const menuElement = event.target as Element;
+        if (
+          props.setIsMenuOpen &&
+          props.isMenuOpen &&
+          !menuElement.closest('[data-menu="true"]')
+        ) {
+          props.setIsMenuOpen(false);
+        }
+      };
+
+      if (props.isMenuOpen) {
+        document.addEventListener("mousedown", handleClickOutside);
+      }
+
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [props, props.isMenuOpen]);
+
+    useEffect(() => {
+      if (props.isMenuOpen) {
+        setShouldRenderMenu(true);
+        // Measure content height after render
+        setTimeout(() => {
+          if (menuContentRef.current) {
+            setMenuHeight(menuContentRef.current.scrollHeight);
+          }
+        }, 0);
+      } else {
+        setMenuHeight(0);
+        const timer = setTimeout(() => setShouldRenderMenu(false), 200);
+        return () => clearTimeout(timer);
+      }
+    }, [props.isMenuOpen]);
 
     // Toggle selection on click; support ctrl-click for multi-selection
     const onClick = useCallback(
@@ -88,46 +125,11 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
       props.props.icon === "/icons/trash-full.png" ||
       props.props.icon === "/icons/trash-empty.png";
 
-    useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
-        const menuElement = event.target as Element;
-        if (
-          props.setIsMenuOpen &&
-          props.isMenuOpen &&
-          !menuElement.closest('[data-menu="true"]')
-        ) {
-          props.setIsMenuOpen(false);
-        }
-      };
-
-      if (props.isMenuOpen) {
-        document.addEventListener("mousedown", handleClickOutside);
-      }
-
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }, [props, props.isMenuOpen]);
-
-    const [shouldRenderMenu, setShouldRenderMenu] = useState(false);
-    const [menuHeight, setMenuHeight] = useState(0);
-    const menuContentRef = React.useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-      if (props.isMenuOpen) {
-        setShouldRenderMenu(true);
-        // Measure content height after render
-        setTimeout(() => {
-          if (menuContentRef.current) {
-            setMenuHeight(menuContentRef.current.scrollHeight);
-          }
-        }, 0);
-      } else {
-        setMenuHeight(0);
-        const timer = setTimeout(() => setShouldRenderMenu(false), 200);
-        return () => clearTimeout(timer);
-      }
-    }, [props.isMenuOpen]);
+    const name = (() => {
+      if ("extension" in props.props && props.props.extension !== ".app")
+        return props.props.name + props.props.extension;
+      return props.props.name;
+    })();
 
     return (
       <div style={{ zIndex: shouldRenderMenu ? 10 : 0 }}>
