@@ -1,5 +1,6 @@
 import FilesItem, { Folder, File } from "@/lib/OSApps/apps/files/FilesItem";
 import { canAccessStorage, getSetting, setSetting } from "@/lib/functions";
+import { getPathnameFromAbsolutePath } from "next/dist/server/route-modules/app-route/helpers/get-pathname-from-absolute-path";
 
 export class OSFileSystem {
   private static listeners: Set<() => void> = new Set();
@@ -128,6 +129,8 @@ export class OSFileSystem {
   }
 
   public static renameFile(file: File, name: string): void {
+    file.path =
+      this.fileFullPathToPathAndName(file.path)[0] + name + file.extension;
     file.name = name;
     this.updateFile(file);
   }
@@ -138,11 +141,31 @@ export class OSFileSystem {
   }
 
   public static renameFolder(folder: Folder, name: string): void {
+    folder.path = this.folderFullPathToPathAndName(folder.path)[0] + name + "/";
     folder.name = name;
     this.updateFolder(folder);
   }
 
   public static renameItem(item: FilesItem, name: string): void {
+    if (name.length === 0 || name.endsWith(".")) return;
+
+    if (this.getFolder(item.path)?.items?.some((item) => item.name === name))
+      return;
+
+    if (
+      name.includes("/") ||
+      name.includes("\\") ||
+      name.includes(":") ||
+      name.includes("*") ||
+      name.includes("?") ||
+      name.includes('"') ||
+      name.includes("<") ||
+      name.includes(">") ||
+      name.includes("|")
+    ) {
+      return;
+    }
+
     if ("items" in item) return this.renameFolder(item as Folder, name);
     else if ("extension" in item) return this.renameFile(item as File, name);
   }

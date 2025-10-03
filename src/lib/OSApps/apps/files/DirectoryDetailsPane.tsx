@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useReducer, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import FilesItem, { Folder, File } from "@/lib/OSApps/apps/files/FilesItem";
 import { OSAppFile } from "@/lib/features/OSApp/OSAppFile";
 import { useOpenFile } from "@/lib/hooks";
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
 import { getSetting } from "@/lib/functions";
+import { GoCheckCircle } from "react-icons/go";
+import { AiOutlineCheckCircle } from "react-icons/ai";
 
 interface DirectoryDetailsPaneProps {
   directory: string;
@@ -230,24 +232,22 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
                         Rename
                       </button>
                     ) : (
-                      <div className="flex flex-row w-full justify-evenly">
+                      <div className="flex flex-row w-full justify-evenly items-center">
                         <input
-                          className="hover:bg-gray-400 hover:text-gray-100 px-2 py-1 cursor-pointer w-20"
+                          className="hover:bg-gray-200 border-0 outline-0 focus:bg-gray-300 rounded-sm px-1 py-1 cursor-text w-20"
                           value={fileName}
                           onChange={(e) => setFileName(e.target.value)}
                           autoFocus
                           onFocus={(e) => e.target.select()}
                           type="text"
                         />
-                        <button
+                        <AiOutlineCheckCircle
                           onClick={() => {
                             OSFileSystem.renameItem(item, fileName);
                             setRenamingFile(false);
                           }}
-                          className="rounded-full bg-white border-1 border-black w-4 h-4 self-center"
-                        >
-                          V
-                        </button>
+                          className="rounded-full w-6 h-6"
+                        />
                       </div>
                     )}
                     <button
