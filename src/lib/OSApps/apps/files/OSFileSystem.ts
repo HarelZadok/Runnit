@@ -8,22 +8,22 @@ export class OSFileSystem {
     if (!OSFileSystem.getFolder("/")) {
       OSFileSystem.updateFolder(new Folder("Root", "/"));
       OSFileSystem.createFolderFrom(
-        new Folder("Trash", "/trash", "/icons/trash-empty.png")
+        new Folder("Trash", "/trash", "/icons/trash-empty.png"),
       );
       OSFileSystem.createFolderFrom(
-        new Folder("Home", "/home", "/icons/home.png")
+        new Folder("Home", "/home", "/icons/home.png"),
       );
       OSFileSystem.createFolderFrom(
-        new Folder("Desktop", "/home/desktop", "/icons/desktop.png")
+        new Folder("Desktop", "/home/desktop", "/icons/desktop.png"),
       );
       OSFileSystem.createFolderFrom(
-        new Folder("Documents", "/home/documents", "/icons/documents.png")
+        new Folder("Documents", "/home/documents", "/icons/documents.png"),
       );
       OSFileSystem.createFolderFrom(
-        new Folder("Downloads", "/home/downloads", "/icons/downloads.png")
+        new Folder("Downloads", "/home/downloads", "/icons/downloads.png"),
       );
       OSFileSystem.createFolderFrom(
-        new Folder("Gallery", "/home/gallery", "/icons/gallery.png")
+        new Folder("Gallery", "/home/gallery", "/icons/gallery.png"),
       );
       OSFileSystem.createFolderFrom(new Folder(".dev", "/.dev"));
     }
@@ -154,27 +154,34 @@ export class OSFileSystem {
   }
 
   public static moveToTrash(item: FilesItem): boolean {
+    [item.beforeTrashPath] = this.fileFullPathToPathAndName(item.path);
     return OSFileSystem.move(item, "/trash");
+  }
+
+  public static restoreFromTrash(item: FilesItem): boolean {
+    const path = item.beforeTrashPath;
+    item.beforeTrashPath = undefined;
+    return OSFileSystem.move(item, path ?? "/");
   }
 
   public static fileFullPathToPathAndName(fullPath: string): [string, string] {
     const path = fullPath.substring(0, fullPath.lastIndexOf("/") + 1);
     const name = fullPath.substring(
       fullPath.lastIndexOf("/") + 1,
-      fullPath.length
+      fullPath.length,
     );
     return [path, name];
   }
 
   public static folderFullPathToPathAndName(
-    fullPath: string
+    fullPath: string,
   ): [string, string] {
     if (fullPath.endsWith("/"))
       fullPath = fullPath.substring(0, fullPath.length - 1);
     const path = fullPath.substring(0, fullPath.lastIndexOf("/") + 1);
     const name = fullPath.substring(
       fullPath.lastIndexOf("/") + 1,
-      fullPath.length
+      fullPath.length,
     );
     return [path, name];
   }

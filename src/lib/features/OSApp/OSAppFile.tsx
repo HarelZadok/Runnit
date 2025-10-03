@@ -3,7 +3,13 @@
 
 import { useAppSelector } from "@/lib/hooks"; // Typed Redux hooks
 import Image from "next/image";
-import React, { forwardRef, useCallback, useState, useEffect } from "react";
+import React, {
+  forwardRef,
+  useCallback,
+  useState,
+  useEffect,
+  JSX,
+} from "react";
 import { Property } from "csstype";
 import TextDecorationColor = Property.TextDecorationColor;
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
@@ -17,6 +23,7 @@ export interface OSAppFileProps {
 export interface AdvancedOSAppFileProps {
   props: OSAppFileProps;
   onMenu?: () => void;
+  menu?: () => JSX.Element;
   onDoubleClick?: () => void;
   onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
   isActive?: boolean;
@@ -31,13 +38,14 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
     // Retrieve icon scale from settings
     const iconScale = useAppSelector((state) => state.settings.iconScale);
     const [isTrashFilled, setIsTrashFilled] = useState(
-      OSFileSystem.isTrashFilled()
+      OSFileSystem.isTrashFilled(),
     );
     const name = (() => {
       if ("extension" in props.props && props.props.extension !== ".app")
         return props.props.name + props.props.extension;
       return props.props.name;
     })();
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     useEffect(() => {
       const updateTrashStatus = () =>
@@ -53,7 +61,7 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
         event.stopPropagation();
         if (props.onClick) props.onClick(event);
       },
-      [props]
+      [props],
     );
 
     const onMenu = useCallback(
@@ -61,8 +69,9 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
         event.stopPropagation();
         event.preventDefault();
         if (props.onMenu) props.onMenu();
+        setIsMenuOpen((p) => !p);
       },
-      [props]
+      [props],
     );
 
     // Prevent unintended drag behavior
@@ -71,57 +80,110 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
         event.stopPropagation();
         event.preventDefault();
       },
-      []
+      [],
     );
 
     const isTrashIcon = () =>
       props.props.icon === "/icons/trash-full.png" ||
       props.props.icon === "/icons/trash-empty.png";
 
-    return (
-      <div
-        className={`flex flex-col justify-center items-center select-none hover:bg-[#77777730] rounded-md hover:backdrop-brightness-150 text-sm ${props.isHidden && "opacity-60"}`}
-        onClick={onClick}
-        onDoubleClick={props.onDoubleClick}
-        onMouseDown={onDragStart}
-        onContextMenu={onMenu}
-        ref={ref}
-        data-id={props.props.id}
-        title={name}
-        style={{
-          height: iconScale + (props.height ?? 50),
-          width: iconScale + (props.width ?? 10),
-          backgroundColor: props.isActive ? "#ffffff30" : undefined,
-          border: props.isActive ? "1px solid" : undefined,
-        }}
-      >
-        <Image
-          width={iconScale}
-          height={iconScale}
-          priority
-          src={
-            isTrashIcon()
-              ? isTrashFilled
-                ? "/icons/trash-full.png"
-                : "/icons/trash-empty.png"
-              : props.props.icon
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        const menuElement = event.target as Element;
+        if (isMenuOpen && !menuElement.closest('[data-menu="true"]')) {
+          setIsMenuOpen(false);
+        }
+      };
+
+      if (isMenuOpen) {
+        document.addEventListener("mousedown", handleClickOutside);
+      }
+
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [isMenuOpen]);
+
+    const [shouldRenderMenu, setShouldRenderMenu] = useState(false);
+    const [menuHeight, setMenuHeight] = useState(0);
+    const menuContentRef = React.useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      if (isMenuOpen) {
+        setShouldRenderMenu(true);
+        // Measure content height after render
+        setTimeout(() => {
+          if (menuContentRef.current) {
+            setMenuHeight(menuContentRef.current.scrollHeight);
           }
-          alt=''
-        />
-        <p
-          className='text-center break-inside-avoid line-clamp-2'
+        }, 0);
+      } else {
+        setMenuHeight(0);
+        const timer = setTimeout(() => setShouldRenderMenu(false), 200);
+        return () => clearTimeout(timer);
+      }
+    }, [isMenuOpen]);
+
+    return (
+      <div>
+        {props.menu && (
+          <div
+            className="absolute justify-self-center transition-all overflow-hidden duration-200"
+            data-menu="true"
+            style={{
+              top: iconScale + (props.height ?? 50) + 8,
+              height: menuHeight,
+            }}
+          >
+            <div onClick={() => setIsMenuOpen(false)} ref={menuContentRef}>
+              {shouldRenderMenu && props.menu()}
+            </div>
+          </div>
+        )}
+        <div
+          className={`flex relative flex-col justify-center items-center select-none hover:bg-[#77777730] rounded-md hover:backdrop-brightness-150 text-sm ${props.isHidden && "opacity-60"}`}
+          onClick={onClick}
+          onDoubleClick={props.onDoubleClick}
+          onMouseDown={onDragStart}
+          onContextMenu={onMenu}
+          ref={ref}
+          data-id={props.props.id}
+          title={name}
           style={{
-            color: props.textColor ?? "white",
-            wordBreak: "break-word",
-            overflowWrap: "anywhere",
+            height: iconScale + (props.height ?? 50),
+            width: iconScale + (props.width ?? 10),
+            backgroundColor: props.isActive ? "#ffffff30" : undefined,
+            border: props.isActive ? "1px solid" : undefined,
           }}
-          dangerouslySetInnerHTML={{
-            __html: name.replace(/\.([^.]+)$/, "<wbr>.$1"),
-          }}
-        />
+        >
+          <Image
+            width={iconScale}
+            height={iconScale}
+            priority
+            src={
+              isTrashIcon()
+                ? isTrashFilled
+                  ? "/icons/trash-full.png"
+                  : "/icons/trash-empty.png"
+                : props.props.icon
+            }
+            alt=""
+          />
+          <p
+            className="text-center break-inside-avoid line-clamp-2"
+            style={{
+              color: props.textColor ?? "white",
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
+            }}
+            dangerouslySetInnerHTML={{
+              __html: name.replace(/\.([^.]+)$/, "<wbr>.$1"),
+            }}
+          />
+        </div>
       </div>
     );
-  }
+  },
 );
 
 OSAppFile.displayName = "OSAppFile";

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Folder, File } from "@/lib/OSApps/apps/files/FilesItem";
+import FilesItem, { Folder, File } from "@/lib/OSApps/apps/files/FilesItem";
 import { OSAppFile } from "@/lib/features/OSApp/OSAppFile";
 import { useOpenFile } from "@/lib/hooks";
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
@@ -20,23 +20,23 @@ const CreateFileDialog = ({
   const [name, setName] = useState("");
 
   return (
-    <div className='flex flex-col absolute h-max w-60 left-1/2 top-1/2 -translate-1/2 bg-gray-300 p-3 rounded-xl'>
-      <p className='self-center font-bold mb-6'>Create new file</p>
+    <div className="flex flex-col absolute h-max w-60 left-1/2 top-1/2 -translate-1/2 bg-gray-300 p-3 rounded-xl">
+      <p className="self-center font-bold mb-6">Create new file</p>
       <input
         onChange={(e) => setName(e.currentTarget.value)}
-        className='bg-gray-200 rounded-md p-1 px-2 mb-5 outline-0'
-        type='text'
-        placeholder='File name'
+        className="bg-gray-200 rounded-md p-1 px-2 mb-5 outline-0"
+        type="text"
+        placeholder="File name"
       />
-      <div className='flex flex-row gap-2'>
+      <div className="flex flex-row gap-2">
         <div
-          className='self-end w-full text-center p-2 bg-red-400 text-white rounded-lg'
+          className="self-end w-full text-center p-2 bg-red-400 text-white rounded-lg"
           onClick={() => cancel()}
         >
           <p>Cancel</p>
         </div>
         <div
-          className='self-end w-full text-center p-2 bg-green-400 text-white rounded-lg'
+          className="self-end w-full text-center p-2 bg-green-400 text-white rounded-lg"
           onClick={() => createFile(name)}
         >
           <p>Create</p>
@@ -91,44 +91,86 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
         new File(
           name.substring(0, name.lastIndexOf(".")),
           path,
-          name.substring(name.lastIndexOf("."), name.length)
-        )
+          name.substring(name.lastIndexOf("."), name.length),
+        ),
       );
       if (file) {
         folder?.items.push(file);
         setFolder(folder);
       }
     },
-    [folder, props.directory]
+    [folder, props.directory],
+  );
+
+  const deleteFile = useCallback(
+    (item: FilesItem) => {
+      const updatedFolder: Folder = {
+        ...folder!,
+        items: folder!.items.filter((cItem) => cItem.id !== item.id),
+      };
+      setFolder(updatedFolder);
+      const [path] = OSFileSystem.fileFullPathToPathAndName(item.path);
+      if (path === "/trash/") OSFileSystem.deleteItem(item);
+      else OSFileSystem.moveToTrash(item);
+    },
+    [folder],
   );
 
   const openFile = useOpenFile();
 
+  const openItem = useCallback(
+    (item: FilesItem) => {
+      if ("items" in item) {
+        props.onDirectory(item.path);
+      } else {
+        openFile(item);
+      }
+    },
+    [openFile, props],
+  );
+
+  const restoreItem = useCallback(
+    (item: FilesItem) => {
+      if (OSFileSystem.restoreFromTrash(item)) {
+        const updatedFolder: Folder = {
+          ...folder!,
+          items: folder!.items.filter((cItem) => cItem.id !== item.id),
+        };
+        setFolder(updatedFolder);
+      }
+    },
+    [folder],
+  );
+
   const hiddenItems = folder?.items?.filter((item) =>
-    item.name.startsWith(".")
+    item.name.startsWith("."),
   );
   const visibleItems = folder?.items?.filter(
-    (item) => !item.name.startsWith(".")
+    (item) => !item.name.startsWith("."),
   );
   const sortedItems = hiddenItems?.concat(visibleItems!);
 
   return (
-    <div className='w-full h-full bg-white text-black flex flex-col'>
-      <div className='w-full h-8 bg-gray-100 text-gray-700 px-3 flex shrink-0 items-center'>
+    <div className="w-full h-full bg-white text-black flex flex-col">
+      <div className="w-full h-8 bg-gray-100 text-gray-700 px-3 flex shrink-0 items-center">
         <p>{props.directory}</p>
       </div>
       <div
-        className='relative flex flex-row flex-wrap w-full h-full content-start p-2 overflow-y-scroll'
+        className="relative flex flex-row flex-wrap w-full h-full content-start p-2 overflow-y-scroll"
         onContextMenu={() => setShowDialog(true)}
       >
         {sortedItems?.map((item, i) => {
-          if (item.name.startsWith(".") && !getSetting("showHiddenFiles"))
+          if (
+            (item.name.startsWith(".") || item.name.length === 0) &&
+            !getSetting("showHiddenFiles")
+          ) {
             return;
+          }
           return (
             <OSAppFile
               key={i}
-              textColor='black'
-              isHidden={item.name.startsWith(".")}
+              textColor="black"
+              isHidden={item.name.startsWith(".") || item.name.length === 0}
               props={{
                 name:
                   item.name +
@@ -138,25 +180,38 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
               }}
               width={40}
               height={40}
-              onMenu={() => {
-                const updatedFolder: Folder = {
-                  ...folder!,
-                  items: folder!.items.filter((cItem) => cItem.id !== item.id),
-                };
-                setFolder(updatedFolder);
+              menu={() => {
                 const [path] = OSFileSystem.fileFullPathToPathAndName(
-                  item.path
+                  item.path,
                 );
-                if (path === "/trash/") OSFileSystem.deleteItem(item);
-                else OSFileSystem.moveToTrash(item);
+
+                return (
+                  <div className="border-gray-500 border-1 bg-gray-100 rounded-md text-gray-500 flex flex-col">
+                    {path === "/trash/" ? (
+                      <button
+                        className="hover:bg-gray-400 hover:text-gray-100 px-2 py-1 cursor-pointer"
+                        onClick={() => restoreItem(item)}
+                      >
+                        Restore
+                      </button>
+                    ) : (
+                      <button
+                        className="hover:bg-gray-400 hover:text-gray-100 px-2 py-1 cursor-pointer"
+                        onClick={() => openItem(item)}
+                      >
+                        Open
+                      </button>
+                    )}
+                    <button
+                      className="hover:bg-gray-400 hover:text-gray-100 px-2 py-1 cursor-pointer"
+                      onClick={() => deleteFile(item)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                );
               }}
-              onDoubleClick={() => {
-                if ("items" in item) {
-                  props.onDirectory(item.path);
-                } else {
-                  openFile(item);
-                }
-              }}
+              onDoubleClick={() => openItem(item)}
             />
           );
         })}

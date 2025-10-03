@@ -6,6 +6,7 @@ export default abstract class FilesItem {
   public name: string;
   public path: string;
   public icon: string;
+  public beforeTrashPath?: string;
 
   protected constructor(name: string, path: string, icon: string) {
     this.id = OSFileSystem.generateFileId();
