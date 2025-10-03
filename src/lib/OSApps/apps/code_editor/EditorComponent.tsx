@@ -83,17 +83,18 @@ export default function EditorComponent(props: EditorComponentProps) {
     const fileArgIndex = props.args.indexOf("--file");
     if (fileArgIndex >= 0) {
       const filePath = props.args[fileArgIndex + 1];
-      return OSFileSystem.getFile(filePath) ?? new File("temp", "/", ".txt");
+      const file = OSFileSystem.getFile(filePath);
+      return file ?? new File("temp", "/", ".txt");
     }
     return new File("temp", "/", ".txt");
   }, [props.args]);
 
-  const [value, setValue] = useState("");
+  const [file, setFile] = useState(getFileFromArgs());
+  const [value, setValue] = useState(file.value);
 
   useEffect(() => {
-    const file = getFileFromArgs();
     if (file) OSFileSystem.updateFileValue(file, value);
-  }, [getFileFromArgs, value]);
+  }, [file, value]);
 
   return (
     <div className="w-full h-full">

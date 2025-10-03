@@ -4,7 +4,6 @@ import { OSAppFile } from "@/lib/features/OSApp/OSAppFile";
 import { useOpenFile } from "@/lib/hooks";
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
 import { getSetting } from "@/lib/functions";
-import { GoCheckCircle } from "react-icons/go";
 import { AiOutlineCheckCircle } from "react-icons/ai";
 
 interface DirectoryDetailsPaneProps {
@@ -63,7 +62,7 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
     OSFileSystem.addListener(forceUpdate);
 
     return () => OSFileSystem.removeListener(forceUpdate);
-  }, [props.directory]);
+  }, [folder?.items, props.directory]);
 
   useEffect(() => {
     const f = OSFileSystem.getFolder(props.directory);
@@ -168,6 +167,9 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
   const [renamingFile, setRenamingFile] = useState(false);
   const [fileName, setFileName] = useState("");
 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuFileId, setMenuFileId] = useState(-1);
+
   return (
     <div className="w-full h-full bg-white text-black flex flex-col">
       <div className="w-full h-8 bg-gray-100 text-gray-700 px-3 flex shrink-0 items-center">
@@ -198,9 +200,12 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
               }}
               width={40}
               height={40}
+              isMenuOpen={isMenuOpen && menuFileId === item.id}
+              setIsMenuOpen={setIsMenuOpen}
               onMenu={() => {
                 setRenamingFile(false);
                 setFileName(item.name);
+                setMenuFileId(item.id);
               }}
               menu={() => {
                 const [path] = OSFileSystem.fileFullPathToPathAndName(
@@ -212,14 +217,20 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
                     {path === "/trash/" ? (
                       <button
                         className="hover:bg-gray-400 hover:text-gray-100 px-2 py-1 cursor-pointer"
-                        onClick={() => restoreItem(item)}
+                        onClick={() => {
+                          restoreItem(item);
+                          setIsMenuOpen(false);
+                        }}
                       >
                         Restore
                       </button>
                     ) : (
                       <button
                         className="hover:bg-gray-400 hover:text-gray-100 px-2 py-1 cursor-pointer"
-                        onClick={() => openItem(item)}
+                        onClick={() => {
+                          openItem(item);
+                          setIsMenuOpen(false);
+                        }}
                       >
                         Open
                       </button>
@@ -245,6 +256,7 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
                           onClick={() => {
                             OSFileSystem.renameItem(item, fileName);
                             setRenamingFile(false);
+                            setIsMenuOpen(false);
                           }}
                           className="rounded-full w-6 h-6"
                         />
@@ -252,7 +264,10 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
                     )}
                     <button
                       className="hover:bg-gray-400 hover:text-gray-100 px-2 py-1 cursor-pointer"
-                      onClick={() => deleteFile(item)}
+                      onClick={() => {
+                        deleteFile(item);
+                        setIsMenuOpen(false);
+                      }}
                     >
                       Delete
                     </button>
