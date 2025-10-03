@@ -13,7 +13,7 @@ export default function EditorComponent(props: EditorComponentProps) {
 
   const handleEditorDidMount = async (
     editor: editor.IStandaloneCodeEditor,
-    monaco: Monaco
+    monaco: Monaco,
   ) => {
     editorRef.current = editor;
 
@@ -53,22 +53,22 @@ export default function EditorComponent(props: EditorComponentProps) {
         }
         export type FC<P = {}> = FunctionComponent<P>;
 
-        export function useState<S>(initialState: S | (() => S)): [S, Dispatch<SetStateAction<S>>];
+        export function useState<S>(initialState: S | (() => S)): [S, Dispatch<SetStateAction<S>>]
         export function useEffect(effect: EffectCallback, deps?: DependencyList): void;
-        export function useRef<T>(initialValue: T): MutableRefObject<T>;
+        export function useRef<T>(initialValue: T): MutableRefObject<T>
         export function useCallback<T extends (...args: any[]) => any>(callback: T, deps: DependencyList): T;
-        export function useMemo<T>(factory: () => T, deps: DependencyList | undefined): T;
+        export function useMemo<T>(factory: () => T, deps: DependencyList | undefined): T
 
         export interface ReactElement<P = any, T extends string | JSXElementConstructor<any> = string | JSXElementConstructor<any>> {}
         export interface ReactNode {}
-        export type JSXElementConstructor<P> = ((props: P) => ReactElement<any, any> | null) | (new (props: P) => Component<any, any>);
+        export type JSXElementConstructor<P> = ((props: P) => ReactElement<any, any> | null) | (new (props: P) => Component<any, any>)
         export type SetStateAction<S> = S | ((prevState: S) => S);
         export type Dispatch<A> = (value: A) => void;
         export type EffectCallback = () => (void | (() => void | undefined));
         export type DependencyList = ReadonlyArray<any>;
         export interface MutableRefObject<T> { current: T; }
       }`,
-      "file:///node_modules/@types/react/index.d.ts"
+      "file:///node_modules/@types/react/index.d.ts",
     );
 
     // Enable TypeScript/JSX validation
@@ -92,16 +92,16 @@ export default function EditorComponent(props: EditorComponentProps) {
 
   useEffect(() => {
     const file = getFileFromArgs();
-    if (file) OSFileSystem.updateFileValue({ ...file, value: value });
+    if (file) OSFileSystem.updateFileValue(file, value);
   }, [getFileFromArgs, value]);
 
   return (
-    <div className='w-full h-full'>
+    <div className="w-full h-full">
       <Editor
-        width='100%'
-        height='100%'
-        defaultLanguage='typescript'
-        theme='vs-dark'
+        width="100%"
+        height="100%"
+        defaultLanguage="typescript"
+        theme="vs-dark"
         value={value}
         onChange={(e) => setValue(e ?? "")}
         onMount={handleEditorDidMount}

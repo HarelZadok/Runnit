@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import FilesItem, { Folder, File } from "@/lib/OSApps/apps/files/FilesItem";
 import { OSAppFile } from "@/lib/features/OSApp/OSAppFile";
 import { useOpenFile } from "@/lib/hooks";
@@ -49,6 +49,19 @@ const CreateFileDialog = ({
 export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
   const [folder, setFolder] = useState<Folder>();
   const [showDialog, setShowDialog] = useState(false);
+
+  useEffect(() => {
+    const forceUpdate = () => {
+      const f = OSFileSystem.getFolder(props.directory);
+      if (f) {
+        setFolder(f);
+      }
+    };
+
+    OSFileSystem.addListener(forceUpdate);
+
+    return () => OSFileSystem.removeListener(forceUpdate);
+  }, [props.directory]);
 
   useEffect(() => {
     const f = OSFileSystem.getFolder(props.directory);
@@ -150,6 +163,9 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
   );
   const sortedItems = hiddenItems?.concat(visibleItems!);
 
+  const [renamingFile, setRenamingFile] = useState(false);
+  const [fileName, setFileName] = useState("");
+
   return (
     <div className="w-full h-full bg-white text-black flex flex-col">
       <div className="w-full h-8 bg-gray-100 text-gray-700 px-3 flex shrink-0 items-center">
@@ -180,13 +196,17 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
               }}
               width={40}
               height={40}
+              onMenu={() => {
+                setRenamingFile(false);
+                setFileName(item.name);
+              }}
               menu={() => {
                 const [path] = OSFileSystem.fileFullPathToPathAndName(
                   item.path,
                 );
 
                 return (
-                  <div className="border-gray-500 border-1 bg-gray-100 rounded-md text-gray-500 flex flex-col">
+                  <div className="border-gray-500 rounded-md text-gray-500 flex flex-col">
                     {path === "/trash/" ? (
                       <button
                         className="hover:bg-gray-400 hover:text-gray-100 px-2 py-1 cursor-pointer"
@@ -201,6 +221,34 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
                       >
                         Open
                       </button>
+                    )}
+                    {!renamingFile ? (
+                      <button
+                        className="hover:bg-gray-400 hover:text-gray-100 px-2 py-1 cursor-pointer"
+                        onClick={() => setRenamingFile(true)}
+                      >
+                        Rename
+                      </button>
+                    ) : (
+                      <div className="flex flex-row w-full justify-evenly">
+                        <input
+                          className="hover:bg-gray-400 hover:text-gray-100 px-2 py-1 cursor-pointer w-20"
+                          value={fileName}
+                          onChange={(e) => setFileName(e.target.value)}
+                          autoFocus
+                          onFocus={(e) => e.target.select()}
+                          type="text"
+                        />
+                        <button
+                          onClick={() => {
+                            OSFileSystem.renameItem(item, fileName);
+                            setRenamingFile(false);
+                          }}
+                          className="rounded-full bg-white border-1 border-black w-4 h-4 self-center"
+                        >
+                          V
+                        </button>
+                      </div>
                     )}
                     <button
                       className="hover:bg-gray-400 hover:text-gray-100 px-2 py-1 cursor-pointer"

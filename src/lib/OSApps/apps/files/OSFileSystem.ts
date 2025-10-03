@@ -88,7 +88,7 @@ export class OSFileSystem {
     let path = folder.path;
     if (!path.endsWith("/")) path += "/";
     localStorage.setItem(path, JSON.stringify(folder));
-    this.notifyListeners();
+    this.updateFileSystem();
   }
 
   public static getFile(fullPath: string): File | null {
@@ -115,7 +115,7 @@ export class OSFileSystem {
     return null;
   }
 
-  public static updateFileValue(file: File): void {
+  public static updateFile(file: File): void {
     const [path] = OSFileSystem.fileFullPathToPathAndName(file.path);
     const folder = OSFileSystem.getFolder(path);
     if (folder) {
@@ -125,6 +125,26 @@ export class OSFileSystem {
         OSFileSystem.updateFolder(folder);
       }
     }
+  }
+
+  public static renameFile(file: File, name: string): void {
+    file.name = name;
+    this.updateFile(file);
+  }
+
+  public static updateFileValue(file: File, value: string): void {
+    file.value = value;
+    this.updateFile(file);
+  }
+
+  public static renameFolder(folder: Folder, name: string): void {
+    folder.name = name;
+    this.updateFolder(folder);
+  }
+
+  public static renameItem(item: FilesItem, name: string): void {
+    if ("items" in item) return this.renameFolder(item as Folder, name);
+    else if ("extension" in item) return this.renameFile(item as File, name);
   }
 
   public static deleteFile(file: File): boolean {
@@ -149,7 +169,7 @@ export class OSFileSystem {
   }
 
   public static move(item: FilesItem, path: string): boolean {
-    this.notifyListeners();
+    this.updateFileSystem();
     return OSFileSystem.recursiveMove(item, path);
   }
 
@@ -201,7 +221,7 @@ export class OSFileSystem {
     return currentId ?? 1;
   }
 
-  private static notifyListeners(): void {
+  public static updateFileSystem(): void {
     this.listeners.forEach((callback) => callback());
   }
 
