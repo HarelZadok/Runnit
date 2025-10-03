@@ -39,18 +39,18 @@ import Files from "@/lib/OSApps/apps/files/Files";
 
 export default function Desktop() {
   const [files, setFiles] = useState<FilesItem[]>(
-    OSFileSystem.getFolder("/home/desktop")?.items ?? []
+    OSFileSystem.getFolder("/home/desktop")?.items ?? [],
   );
   const openApps = useAppSelector((state) => state.windowManager.openApps);
   const activeFiles = useAppSelector(
-    (state) => state.desktop.activeDesktopFiles
+    (state) => state.desktop.activeDesktopFiles,
   );
   const background = useAppSelector((state) => state.settings.background);
   const taskbarHeight = useAppSelector((state) => state.settings.taskbarHeight);
   const iconScale = useAppSelector((state) => state.settings.iconScale);
   const taskbarHideRate = useAppSelector((state) => state.taskbar.hideRate);
   const shouldIndicateFullscreen = useAppSelector(
-    (state) => state.windowManager.shouldIndicateFullscreen
+    (state) => state.windowManager.shouldIndicateFullscreen,
   );
   const [showingTaskbar, setShowingTaskbar] = useState(false);
   const [columnHeight, setColumnHeight] = useState<number>(-1);
@@ -62,6 +62,8 @@ export default function Desktop() {
   const [fullscreen, setFullscreen] = useState(false);
   const itemRefs = useRef<HTMLDivElement[]>([]);
   const dispatch = useAppDispatch();
+
+  const cursorY = useRef(0);
 
   const updateRef = useRef(false);
   useLayoutEffect(() => {
@@ -86,7 +88,7 @@ export default function Desktop() {
     startY: number,
     endX: number,
     endY: number,
-    elements: HTMLElement[]
+    elements: HTMLElement[],
   ): HTMLElement[] {
     const left = Math.min(startX, endX);
     const right = Math.max(startX, endX);
@@ -111,7 +113,7 @@ export default function Desktop() {
       selectionYStart,
       selectionXEnd,
       selectionYEnd,
-      itemRefs.current
+      itemRefs.current,
     );
     const overlappingIds = overlapping.map((el) => Number(el.dataset.id));
     return files.filter((app) => overlappingIds.includes(app.id));
@@ -123,7 +125,7 @@ export default function Desktop() {
       // TODO: allow changing background.
       dispatch(changeDesktopBackground(background));
     },
-    [background, dispatch]
+    [background, dispatch],
   );
 
   const onDragStart = useCallback(
@@ -135,10 +137,8 @@ export default function Desktop() {
         setIsSelecting(true);
       }
     },
-    [dispatch]
+    [dispatch],
   );
-
-  const cursorY = useRef(0);
 
   const onMouseMove = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -162,7 +162,7 @@ export default function Desktop() {
         dispatch(cancelShowTaskbar());
       }
     },
-    [dispatch, isSelecting, showingTaskbar, taskbarHeight, taskbarHideRate]
+    [dispatch, isSelecting, showingTaskbar, taskbarHeight, taskbarHideRate],
   );
 
   useEffect(() => {
@@ -184,7 +184,9 @@ export default function Desktop() {
       selectionYEnd !== -1
     ) {
       dispatch(
-        setActiveDesktopApps(getAppsInSelectionBox().flatMap((item) => item.id))
+        setActiveDesktopApps(
+          getAppsInSelectionBox().flatMap((item) => item.id),
+        ),
       );
       setSelectionXStart(-1);
       setSelectionXEnd(-1);
@@ -216,7 +218,7 @@ export default function Desktop() {
           break;
       }
     },
-    [isSelecting, onDragEnd]
+    [isSelecting, onDragEnd],
   );
 
   useEffect(() => {
@@ -253,7 +255,7 @@ export default function Desktop() {
   }, []);
 
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
+    document.body.onkeydown = (e: KeyboardEvent) => {
       if (e.key === "F12") e.preventDefault();
       if (e.key === "F5") {
         e.preventDefault();
@@ -295,8 +297,6 @@ export default function Desktop() {
 
       e.preventDefault();
     };
-
-    document.body.onkeydown = onKeyDown;
     document.onfullscreenchange = () => {
       setFullscreen(document.fullscreenElement !== null);
     };
@@ -311,7 +311,7 @@ export default function Desktop() {
 
   return (
     <div
-      className='relative flex flex-col w-screen h-screen bg-cover bg-center overflow-hidden select-none'
+      className="relative flex flex-col w-screen h-screen bg-cover bg-center overflow-hidden select-none"
       style={{ backgroundImage: `url('${background}')` }}
       onMouseUp={handleMouseEvent}
       onContextMenu={onContextMenu}
@@ -324,24 +324,24 @@ export default function Desktop() {
         selectionXEnd >= 0 &&
         selectionYEnd >= 0 && (
           <div
-            className='absolute bg-[#ffffff30] z-40 rounded-md border border-white'
+            className="absolute bg-[#ffffff30] z-40 rounded-md border border-white"
             style={{
               top: Math.min(selectionYEnd, selectionYStart),
               left: Math.min(selectionXEnd, selectionXStart),
               bottom: Math.min(
                 window.innerHeight - selectionYEnd,
-                window.innerHeight - selectionYStart
+                window.innerHeight - selectionYStart,
               ),
               right: Math.min(
                 window.innerWidth - selectionXEnd,
-                window.innerWidth - selectionXStart
+                window.innerWidth - selectionXStart,
               ),
             }}
           ></div>
         )}
       {columnHeight !== -1 && (
         <div
-          className='gap-3 h-full px-1 grid z-10'
+          className="gap-3 h-full px-1 grid z-10"
           style={{
             paddingBottom: taskbarHeight + 30,
             gridAutoFlow: "column",
@@ -378,7 +378,7 @@ export default function Desktop() {
                         launchApp({
                           id: id,
                           args: ["--folder", cFile.path],
-                        })
+                        }),
                       );
                     } else {
                       openFile(cFile);
@@ -398,7 +398,7 @@ export default function Desktop() {
       <AppLauncher />
       {openApps.map((app) => showApp(app.pid, app.args))}
       <div
-        className='absolute w-screen h-screen bg-white/30 backdrop-blur-2xl border-white border-2 z-999 transition-all duration-500 pointer-events-none'
+        className={`absolute bg-white/30 backdrop-blur-2xl border-white border-2 z-999 transition-all duration-500 pointer-events-none ${cursorY.current >= 11 ? "rounded-2xl inset-3" : "rounded-none inset-0"}`}
         style={{ opacity: shouldIndicateFullscreen ? "100%" : "0%" }}
       />
       {updateRef.current && <UpdateNotifier />}
