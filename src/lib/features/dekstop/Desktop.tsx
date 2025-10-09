@@ -256,6 +256,15 @@ export default function Desktop() {
 
   useEffect(() => {
     document.body.onkeydown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isTargetEditable =
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable;
+      if (isTargetEditable) {
+        return;
+      }
+
       if (e.key === "F12") e.preventDefault();
       if (e.key === "F5") {
         e.preventDefault();
@@ -287,18 +296,6 @@ export default function Desktop() {
             dispatch(closeApp(openApps[focusedIndex].pid));
           }
         }
-      }
-
-      const target = e.target as HTMLElement;
-      const isTargetEditable =
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable;
-      if (isTargetEditable) {
-        if (e.ctrlKey && e.key === "a") {
-          (target as HTMLInputElement).select();
-        }
-        return;
       }
 
       e.preventDefault();
@@ -404,7 +401,7 @@ export default function Desktop() {
       <AppLauncher />
       {openApps.map((app) => showApp(app.pid, app.args))}
       <div
-        className={`absolute bg-white/30 backdrop-blur-2xl border-white border-2 z-999 transition-all duration-500 pointer-events-none ${cursorY.current >= 11 ? "rounded-2xl inset-3" : "rounded-none inset-0"}`}
+        className={`absolute bg-white/30 backdrop-blur-2xl border-white border-2 z-999 transition-all duration-500 pointer-events-none ${cursorY.current >= 11 ? "rounded-2xl inset-5" : "rounded-md inset-1"}`}
         style={{ opacity: shouldIndicateFullscreen ? "100%" : "0%" }}
       />
       {updateRef.current && <UpdateNotifier />}

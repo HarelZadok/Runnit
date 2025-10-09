@@ -26,6 +26,7 @@ export class OSFileSystem {
         new Folder("Gallery", "/home/gallery", "/icons/gallery.png"),
       );
       OSFileSystem.createFolderFrom(new Folder(".dev", "/.dev"));
+      OSFileSystem.createFolderFrom(new Folder(".apps", "/.apps"));
     }
   }
 

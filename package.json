@@ -9,10 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@babel/standalone": "^7.28.4",
     "@monaco-editor/react": "^4.7.0",
     "@reduxjs/toolkit": "^2.8.2",
     "ace-builds": "^1.43.2",
-    "next": "15.4.3",
+    "next": "^15.5.4",
     "react": "19.1.0",
     "react-ace": "^14.0.1",
     "react-dom": "19.1.0",
@@ -22,6 +23,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/babel__standalone": "^7.1.9",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

@@ -35,6 +35,9 @@ export default abstract class OSApp
   // appFile stores basic info (id, name, icon) passed to desktop and taskbar
   public appFile: OSAppFileProps;
   public args: string[];
+  public isMaximized = false;
+  public isMinimized = false;
+  protected headerTitle: string;
   private readonly headerHeight: number;
   // Variables
   private isResizing = false;
@@ -49,9 +52,7 @@ export default abstract class OSApp
   private onGrabbing: ((event: MouseEvent) => void) | undefined;
   private onRelease: ((event: MouseEvent) => void) | undefined;
   private isDragging: boolean = false;
-  public isMaximized = false;
   private onMaximize: (() => void) | undefined;
-  private isMinimized = false;
   private onMinimize: (() => void) | undefined;
   private onResizeStart:
     | ((event: React.MouseEvent, sides: Sides[]) => void)
@@ -62,8 +63,6 @@ export default abstract class OSApp
     | undefined;
   private onClose: (() => void) | undefined;
   private headerTrailingItems: ReactElement[];
-
-  protected headerTitle: string;
 
   protected constructor(props?: OSAppProps) {
     super(props ?? {});
