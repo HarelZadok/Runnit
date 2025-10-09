@@ -268,7 +268,13 @@ export default function Desktop() {
         if (e.key === "Tab") {
           const focusedIndex = openApps.findIndex((app) => app.isFocused);
           if (focusedIndex >= 0) {
-            if (focusedIndex + 1 >= openApps.length) {
+            if (e.shiftKey) {
+              if (focusedIndex - 1 < 0) {
+                dispatch(launchApp({ id: openApps[openApps.length - 1].pid }));
+              } else {
+                dispatch(launchApp({ id: openApps[focusedIndex - 1].pid }));
+              }
+            } else if (focusedIndex + 1 >= openApps.length) {
               dispatch(launchApp({ id: openApps[0].pid }));
             } else {
               dispatch(launchApp({ id: openApps[focusedIndex + 1].pid }));

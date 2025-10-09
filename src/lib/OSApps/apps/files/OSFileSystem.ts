@@ -1,6 +1,5 @@
 import FilesItem, { Folder, File } from "@/lib/OSApps/apps/files/FilesItem";
 import { canAccessStorage, getSetting, setSetting } from "@/lib/functions";
-import { getPathnameFromAbsolutePath } from "next/dist/server/route-modules/app-route/helpers/get-pathname-from-absolute-path";
 
 export class OSFileSystem {
   private static listeners: Set<() => void> = new Set();
@@ -148,8 +147,8 @@ export class OSFileSystem {
 
   public static renameItem(item: FilesItem, name: string): void {
     if (
-      !this.getFolder(item.path) ||
-      this.isNameValid(this.getFolder(item.path)!, name)
+      !this.getFolder(this.fileFullPathToPathAndName(item.path)[0]) ||
+      !this.isNameValid(this.getFolder(item.path)!, name)
     )
       return;
 
