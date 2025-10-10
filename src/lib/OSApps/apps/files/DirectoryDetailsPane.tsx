@@ -155,8 +155,16 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
 
   return (
     <div className="w-full h-full bg-white text-black flex flex-col">
-      <div className="w-full h-8 bg-gray-100 text-gray-700 px-3 flex shrink-0 items-center">
+      <div className="w-full h-8 bg-gray-100 text-gray-700 px-3 flex shrink-0 items-center justify-between">
         <p>{props.directory}</p>
+        {props.directory === "/trash/" && (
+          <button
+            onClick={() => sortedItems?.map((item) => deleteFile(item))}
+            className="bg-white text-red-500 font-bold px-2 py-1 rounded-full text-xs hover:bg-red-500 hover:text-white border-1"
+          >
+            Empty
+          </button>
+        )}
       </div>
       <div
         className="relative flex flex-row flex-wrap w-full h-full content-start p-2 overflow-y-scroll"

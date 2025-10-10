@@ -50,7 +50,7 @@ function compileTsxWrapped(source: string): string {
   return code || "";
 }
 
-function evalWithContext(js: string, context: Record<string, any>) {
+function evalWithContext(js: string, context: Record<string, object>) {
   const keys = Object.keys(context);
   const vals = Object.values(context);
 
@@ -60,7 +60,7 @@ function evalWithContext(js: string, context: Record<string, any>) {
   return new Function(...keys, wrappedForEval)(...vals);
 }
 
-export function makeClassFromTsx(source: string, ctx: Record<string, any>) {
+export function makeClassFromTsx(source: string, ctx: Record<string, object>) {
   const js = compileTsxWrapped("return " + source);
   return evalWithContext(js, ctx);
 }
