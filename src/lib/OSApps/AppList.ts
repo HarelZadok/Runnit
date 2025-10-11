@@ -10,8 +10,6 @@ import CodeEditor from "@/lib/OSApps/apps/code_editor/CodeEditor";
 import Settings from "./apps/settings/Settings";
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
 import { File } from "@/lib/OSApps/apps/files/FilesItem";
-import React from "react";
-import * as JSXRT from "react/jsx-runtime";
 import { makeClassFromTsx } from "@/lib/runtimeCompiler";
 
 export const apps: OSApp[] = [
@@ -41,8 +39,9 @@ for (const mApp of OSFileSystem.getFolder("/.apps")?.items ?? []) {
   if (file.extension !== ".osapp" || !file.value) continue;
 
   try {
-    const NewApp = await makeClassFromTsx(file.value, { OSApp, React, JSXRT });
+    const NewApp = await makeClassFromTsx(file.value);
     const instance = new NewApp();
+    console.log(instance.appFile.id);
     apps.push(instance);
   } catch (err) {
     console.error(`Failed to load app: "${file.name}"`, err);

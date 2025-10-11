@@ -143,6 +143,9 @@ declare module "runnit/OSApp" {
   };
 
   const handleMount = (editor: editor.IStandaloneCodeEditor) => {
+    editor.getModel()!.updateOptions({
+      tabSize: 2,
+    });
     editorRef.current = editor;
   };
 

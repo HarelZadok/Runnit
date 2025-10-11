@@ -1,6 +1,9 @@
 "use client";
 
 import * as esbuild from "esbuild-wasm";
+import OSApp from "@/lib/features/OSApp/OSApp";
+import React from "react";
+import * as JSXRT from "react/jsx-runtime";
 
 let esbuildReady: Promise<void> | null = null;
 function ensureEsbuild() {
@@ -154,11 +157,8 @@ export async function importBlobModule(
 // ─────────────────────────────────────────────
 // High-level helper
 // ─────────────────────────────────────────────
-export async function makeClassFromTsx(
-  source: string,
-  ctx: Record<string, object>,
-) {
+export async function makeClassFromTsx(source: string) {
   const bundled = await compileDynamicTsxToEsm(source);
-  const mod = await importBlobModule(bundled, ctx);
+  const mod = await importBlobModule(bundled, { OSApp, React, JSXRT });
   return mod.default ?? mod.ExampleApp ?? mod;
 }
