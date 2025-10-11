@@ -53,3 +53,6 @@ next-env.d.ts
 # Miscellaneous caches and OS files
 .cache/
 Thumbs.db
+
+# Dynamic styling
+tailwind.css
