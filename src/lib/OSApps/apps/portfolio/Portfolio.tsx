@@ -1,5 +1,6 @@
 import OSApp, { OSAppProps } from "@/lib/features/OSApp/OSApp";
 import { JSX } from "react";
+import { ThreeDot } from "react-loading-indicators";
 
 interface PortfolioState {
   isLoading: boolean;
@@ -21,17 +22,17 @@ export default class Portfolio extends OSApp {
 
   body(): JSX.Element {
     return (
-      <div className='w-full h-full'>
+      <div className="w-full h-full">
         {this.state.isLoading && (
-          <div className='w-full h-full bg-white flex justify-center items-center'>
-            <p className='text-black text-2xl'>Loading...</p>
+          <div className="w-full h-full bg-black flex justify-center items-center">
+            <ThreeDot variant="bounce" color="#121c35" size="medium" />
           </div>
         )}
         <iframe
           onLoad={() => this.setState({ isLoading: false })}
-          width='100%'
-          height='100%'
-          src='https://harelzadok.com/'
+          width="100%"
+          height="100%"
+          src="https://harelzadok.com/"
         />
       </div>
     );
