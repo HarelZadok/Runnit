@@ -164,7 +164,7 @@ export default function Taskbar() {
 const FocusBar = ({ isFocused }: { isFocused: boolean }) => {
   return (
     <div
-      className="absolute w-2/5 h-1 top-[1px] rounded-full transition-colors border-1 duration-400"
+      className="absolute w-2/5 h-1 top-[1px] rounded-full transition-colors border duration-400"
       style={{
         backgroundColor: isFocused ? "#222222FF" : "#FFFFFFFF",
         borderColor: isFocused ? "#FFFFFFFF" : "#222222FF",

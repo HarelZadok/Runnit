@@ -135,7 +135,7 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
       <div style={{ zIndex: shouldRenderMenu ? 10 : 0 }}>
         {props.menu && shouldRenderMenu && (
           <div
-            className={`absolute border-1 ${menuHeight > 0 ? "bg-gray-100 border-gray-300" : "bg-transparent border-transparent"} rounded-md justify-self-center transition-all overflow-hidden duration-200`}
+            className={`absolute border ${menuHeight > 0 ? "bg-gray-100 border-gray-300" : "bg-transparent border-transparent"} rounded-md justify-self-center transition-all overflow-hidden duration-200`}
             data-menu="true"
             style={{
               paddingTop: iconScale + (props.height ?? 50),

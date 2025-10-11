@@ -20,19 +20,6 @@ export const apps: OSApp[] = [
   new Portfolio(),
 ];
 
-// Load TailwindCSS to the runtime apps.
-function ensureDynamicTailwind() {
-  const id = "dynamic-tailwind";
-  if (typeof document === "undefined" || document.getElementById(id)) return;
-  const link = document.createElement("link");
-  link.id = id;
-  link.rel = "stylesheet";
-  link.href = "/dynamic-tailwind.css";
-  document.head.appendChild(link);
-}
-
-ensureDynamicTailwind();
-
 // Load runtime apps.
 for (const mApp of OSFileSystem.getFolder("/.apps")?.items ?? []) {
   const file = mApp as File;

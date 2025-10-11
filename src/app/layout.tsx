@@ -3,6 +3,7 @@ import "./globals.css";
 import React from "react";
 import { headers } from "next/headers";
 import { isMobile } from "@/lib/functions";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Runnit",
@@ -30,7 +31,13 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`antialiased`}>{children}</body>
+      <body className={`antialiased`}>
+        <Script
+          src="https://cdn.tailwindcss.com"
+          strategy="beforeInteractive"
+        />
+        {children}
+      </body>
     </html>
   );
 }

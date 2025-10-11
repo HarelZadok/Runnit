@@ -160,7 +160,7 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
         {props.directory === "/trash/" && (
           <button
             onClick={() => sortedItems?.map((item) => deleteFile(item))}
-            className="bg-white text-red-500 font-bold px-2 py-1 rounded-full text-xs hover:bg-red-500 hover:text-white border-1"
+            className="bg-white text-red-500 font-bold px-2 py-1 rounded-full text-xs hover:bg-red-500 hover:text-white border"
           >
             Empty
           </button>
