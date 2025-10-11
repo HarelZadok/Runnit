@@ -1,6 +1,0 @@
-@import "tailwindcss/preflight";
-@import "tailwindcss/index";
-@import "tailwindcss/theme";
-@import "tailwindcss/utilities";
-
-@tailwind utilities;
