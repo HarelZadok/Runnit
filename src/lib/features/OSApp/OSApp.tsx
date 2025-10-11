@@ -1,6 +1,13 @@
 "use client";
 
-import React, { cloneElement, Component, JSX, ReactElement } from "react";
+import {
+  cloneElement,
+  Component,
+  JSX,
+  ReactElement,
+  DragEvent as ReactDragEvent,
+  MouseEvent as ReactMouseEvent,
+} from "react";
 import { OSAppFileProps } from "@/lib/features/OSApp/OSAppFile";
 import { RiCloseLargeLine } from "react-icons/ri";
 import { FiMaximize, FiMinimize } from "react-icons/fi";
@@ -46,16 +53,14 @@ export default abstract class OSApp
   private eastResize = false;
   private westResize = false;
   // Internal drag state and lifecycle callbacks
-  private onGrab:
-    | ((event: React.DragEvent<HTMLDivElement>) => void)
-    | undefined;
+  private onGrab: ((event: ReactDragEvent<HTMLDivElement>) => void) | undefined;
   private onGrabbing: ((event: MouseEvent) => void) | undefined;
   private onRelease: ((event: MouseEvent) => void) | undefined;
   private isDragging: boolean = false;
   private onMaximize: (() => void) | undefined;
   private onMinimize: (() => void) | undefined;
   private onResizeStart:
-    | ((event: React.MouseEvent, sides: Sides[]) => void)
+    | ((event: ReactMouseEvent, sides: Sides[]) => void)
     | undefined;
   private onResizing: ((event: MouseEvent, sides: Sides[]) => void) | undefined;
   private onResizeEnd:
@@ -92,7 +97,7 @@ export default abstract class OSApp
   }
 
   setOnGrabStart = (
-    callback: (event: React.DragEvent<HTMLDivElement>) => void
+    callback: (event: ReactDragEvent<HTMLDivElement>) => void,
   ) => {
     this.onGrab = callback;
   };
@@ -118,7 +123,7 @@ export default abstract class OSApp
   };
 
   setOnResizeStart = (
-    callback: (event: React.MouseEvent, sides: Sides[]) => void
+    callback: (event: ReactMouseEvent, sides: Sides[]) => void,
   ) => {
     this.onResizeStart = callback;
   };
@@ -147,7 +152,7 @@ export default abstract class OSApp
   header(): JSX.Element {
     return (
       <div
-        className='flex flex-row justify-between items-center bg-[#25252594] text-white backdrop-blur-2xl'
+        className="flex flex-row justify-between items-center bg-[#25252594] text-white backdrop-blur-2xl"
         style={{ height: this.headerHeight }}
       >
         <div
@@ -157,17 +162,17 @@ export default abstract class OSApp
           onDoubleClick={() => {
             this.setMaximize(!this.isMaximized);
           }}
-          className='w-full h-full flex flex-row items-center px-2 gap-2'
+          className="w-full h-full flex flex-row items-center px-2 gap-2"
         >
-          <Image src={this.appFile.icon} alt='' width={20} height={20} />
+          <Image src={this.appFile.icon} alt="" width={20} height={20} />
           <small>{this.headerTitle}</small>
         </div>
-        <div className='h-full flex flex-row'>
+        <div className="h-full flex flex-row">
           {this.headerTrailingItems.map((item, i) =>
-            cloneElement(item, { key: i })
+            cloneElement(item, { key: i }),
           )}
           <div
-            className='hover:bg-gray-300 text-gray-300 hover:text-black h-full w-8 flex justify-center items-center cursor-pointer'
+            className="hover:bg-gray-300 text-gray-300 hover:text-black h-full w-8 flex justify-center items-center cursor-pointer"
             onClick={() => {
               this.setMinimize(!this.isMinimized);
             }}
@@ -175,7 +180,7 @@ export default abstract class OSApp
             <IoIosArrowDown />
           </div>
           <div
-            className='hover:bg-yellow-500 text-yellow-500 hover:text-black h-full w-8 flex justify-center items-center cursor-pointer'
+            className="hover:bg-yellow-500 text-yellow-500 hover:text-black h-full w-8 flex justify-center items-center cursor-pointer"
             onClick={() => {
               this.setMaximize(!this.isMaximized);
             }}
@@ -183,7 +188,7 @@ export default abstract class OSApp
             {this.isMaximized ? <FiMinimize /> : <FiMaximize />}
           </div>
           <div
-            className='hover:bg-red-500 text-red-500 hover:text-black h-full w-8 flex justify-center items-center cursor-pointer'
+            className="hover:bg-red-500 text-red-500 hover:text-black h-full w-8 flex justify-center items-center cursor-pointer"
             onClick={() => {
               if (this.onClose) this.onClose();
             }}
@@ -199,9 +204,9 @@ export default abstract class OSApp
     return (
       <div
         onMouseDown={(e) => e.stopPropagation()}
-        className='bg-white flex flex-col justify-center items-center w-full h-full'
+        className="bg-white flex flex-col justify-center items-center w-full h-full"
       >
-        <p className='text-black'>
+        <p className="text-black">
           Override {this.constructor.name}.body() to update the app.
         </p>
       </div>
@@ -211,11 +216,11 @@ export default abstract class OSApp
   render() {
     return (
       <div
-        className='w-full h-full'
+        className="w-full h-full"
         style={{ width: "100%", height: `calc(100% - ${this.headerHeight}px)` }}
       >
         <div
-          id='north'
+          id="north"
           draggable
           onMouseDownCapture={this.mOnResizeStart}
           onMouseOverCapture={() => {
@@ -241,7 +246,7 @@ export default abstract class OSApp
           }}
         />
         <div
-          id='north-east'
+          id="north-east"
           draggable
           onMouseDownCapture={this.mOnResizeStart}
           onMouseOverCapture={() => {
@@ -269,7 +274,7 @@ export default abstract class OSApp
           }}
         />
         <div
-          id='north-west'
+          id="north-west"
           draggable
           onMouseDownCapture={this.mOnResizeStart}
           onMouseOverCapture={() => {
@@ -297,7 +302,7 @@ export default abstract class OSApp
           }}
         />
         <div
-          id='south'
+          id="south"
           draggable
           onMouseDownCapture={this.mOnResizeStart}
           onMouseOverCapture={() => {
@@ -323,7 +328,7 @@ export default abstract class OSApp
           }}
         />
         <div
-          id='south-east'
+          id="south-east"
           draggable
           onMouseDownCapture={this.mOnResizeStart}
           onMouseOverCapture={() => {
@@ -351,7 +356,7 @@ export default abstract class OSApp
           }}
         />
         <div
-          id='south-west'
+          id="south-west"
           draggable
           onMouseDownCapture={this.mOnResizeStart}
           onMouseOverCapture={() => {
@@ -379,7 +384,7 @@ export default abstract class OSApp
           }}
         />
         <div
-          id='east'
+          id="east"
           draggable
           onMouseDownCapture={this.mOnResizeStart}
           onMouseOverCapture={() => {
@@ -405,7 +410,7 @@ export default abstract class OSApp
           }}
         />
         <div
-          id='west'
+          id="west"
           draggable
           onMouseDownCapture={this.mOnResizeStart}
           onMouseOverCapture={() => {
@@ -431,7 +436,7 @@ export default abstract class OSApp
           }}
         />
         {this.header()}
-        <div className='h-full w-full overflow-hidden'>{this.body()}</div>
+        <div className="h-full w-full overflow-hidden">{this.body()}</div>
       </div>
     );
   }
@@ -466,7 +471,7 @@ export default abstract class OSApp
     this.headerTrailingItems.push(headerItem);
   };
 
-  protected mOnGrabStart = (event: React.DragEvent<HTMLDivElement>) => {
+  protected mOnGrabStart = (event: ReactDragEvent<HTMLDivElement>) => {
     // Begin drag, invoke external handler if provided
     event.preventDefault();
     event.stopPropagation();
@@ -500,7 +505,7 @@ export default abstract class OSApp
     this.isDragging = false;
   };
 
-  protected mOnResizeStart = (event: React.MouseEvent) => {
+  protected mOnResizeStart = (event: ReactMouseEvent) => {
     if (this.isResizing) return;
 
     event.stopPropagation();

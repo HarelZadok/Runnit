@@ -1,4 +1,5 @@
 // AppList.ts: Instantiate and register all available OS-style applications
+"use client";
 
 import appRegistry from "@/lib/OSApps/AppRegistry";
 import OSApp from "@/lib/features/OSApp/OSApp";
@@ -10,7 +11,8 @@ import Settings from "./apps/settings/Settings";
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
 import { File } from "@/lib/OSApps/apps/files/FilesItem";
 import React from "react";
-import { makeClassFromTsx } from "@/lib/functions";
+import * as JSXRT from "react/jsx-runtime";
+import { makeClassFromTsx } from "@/lib/runtimeCompiler";
 
 export const apps: OSApp[] = [
   new Trash(),
@@ -20,12 +22,26 @@ export const apps: OSApp[] = [
   new Portfolio(),
 ];
 
+// Load TailwindCSS to the runtime apps.
+function ensureDynamicTailwind() {
+  const id = "dynamic-tailwind";
+  if (typeof document === "undefined" || document.getElementById(id)) return;
+  const link = document.createElement("link");
+  link.id = id;
+  link.rel = "stylesheet";
+  link.href = "/dynamic-tailwind.css";
+  document.head.appendChild(link);
+}
+
+ensureDynamicTailwind();
+
+// Load runtime apps.
 for (const mApp of OSFileSystem.getFolder("/.apps")?.items ?? []) {
   const file = mApp as File;
-  if (!file.value) continue;
+  if (file.extension !== ".osapp" || !file.value) continue;
 
   try {
-    const NewApp = makeClassFromTsx(file.value, { OSApp, React });
+    const NewApp = await makeClassFromTsx(file.value, { OSApp, React, JSXRT });
     const instance = new NewApp();
     apps.push(instance);
   } catch (err) {

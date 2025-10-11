@@ -91,22 +91,12 @@ export default function EditorComponent(props: EditorComponentProps) {
     );
     monaco.languages.typescript.typescriptDefaults.addExtraLib(
       `
-declare namespace Runnit {
-  interface OSAppFileProps {
-    id?: number;
-    name: string;
-    icon: string;
-  }
+declare module "runnit/OSApp" {
+  // shape should mirror your class’s public surface
+  export interface OSAppFileProps { id?: number; name: string; icon: string }
+  export interface OSAppProps { args?: string[] }
 
-  interface OSAppProps {
-    args?: string[];
-  }
-
-  // Mirror the surface you actually use in code (can be a subset)
-  class OSApp extends import("react").Component<OSAppProps> {
-    constructor(props?: OSAppProps);
-
-    // public fields
+  export default class OSApp extends import("react").Component<OSAppProps> {
     static appCount: number;
     readonly defaultWidth: number;
     readonly defaultHeight: number;
@@ -116,12 +106,13 @@ declare namespace Runnit {
     args: string[];
     isMaximized: boolean;
     isMinimized: boolean;
-    headerTitle: string;
 
-    // public/overridable methods
-    header(): import("react").JSX.Element;
-    body(): import("react").JSX.Element;
-    render(): import("react").JSX.Element;
+    constructor(props?: OSAppProps);
+    header(): import("react").ReactElement;
+    body(): import("react").ReactElement;
+
+    setMaximize(maximize: boolean): void;
+    setMinimize(minimize: boolean): void;
 
     getAppProps(): {
       appFile: OSAppFileProps;
@@ -131,24 +122,28 @@ declare namespace Runnit {
       defaultHeight: number;
     };
 
-    // protected APIs you call from subclasses
-    protected setAppFile(args: { name?: string; icon?: string }): void;
+    protected setAppFile(input: { name?: string; icon?: string }): void;
     protected addHeaderTrailingItem(item: import("react").ReactElement): void;
   }
 }
-
-declare const OSApp: typeof Runnit.OSApp;
-declare type OSAppProps = Runnit.OSAppProps;
-declare type OSAppFileProps = Runnit.OSAppFileProps;
 `,
-      "file:///node_modules/@types/runnit/globals.d.ts",
+      "file:///node_modules/@types/runnit/index.d.ts",
     );
+
+    // (optional) path hint
+    const ts = monaco.languages.typescript;
+    ts.typescriptDefaults.setCompilerOptions({
+      ...ts.typescriptDefaults.getCompilerOptions(),
+      baseUrl: "file:///",
+      paths: {
+        ...(ts.typescriptDefaults.getCompilerOptions().paths || {}),
+        "runnit/OSApp": ["node_modules/@types/runnit/index.d.ts"],
+      },
+    });
   };
 
   const handleMount = (editor: editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
-    // No createModel() here! The Editor already created it with the path we pass.
-    console.log("Language:", editor.getModel()?.getLanguageId()); // should be "typescript"
   };
 
   return (
