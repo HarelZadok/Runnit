@@ -79,7 +79,7 @@ export default function Taskbar() {
           justify-center
           flex
           flex-row
-          px-1
+          p-1
           z-20000
           transition-all
           duration-400
