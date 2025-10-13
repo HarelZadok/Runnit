@@ -88,7 +88,7 @@ export default function Desktop() {
     }, 100);
 
     return () => clearInterval(id);
-  }, []);
+  }, [isOsLoading]);
 
   useLayoutEffect(() => {
     if (isOsLoading) dispatch(incrementHideRate());
