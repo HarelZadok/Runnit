@@ -79,13 +79,20 @@ export default function Desktop() {
   }, []);
 
   useLayoutEffect(() => {
-    if (isOsLoading) {
-      dispatch(incrementHideRate());
-      setTimeout(() => {
-        dispatch(decrementHideRate());
+    const id = setInterval(() => {
+      if (!isOsLoading) clearInterval(id);
+      if (appRegistry.apps.length > 0) {
         setIsOsLoading(false);
-      }, 1000);
-    }
+        clearInterval(id);
+      }
+    }, 100);
+
+    return () => clearInterval(id);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (isOsLoading) dispatch(incrementHideRate());
+    else dispatch(decrementHideRate());
   }, [dispatch, isOsLoading]);
 
   useEffect(() => {

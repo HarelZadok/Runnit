@@ -40,16 +40,21 @@ export default function AppLauncher() {
   }, []);
 
   useEffect(() => {
-    const id = setInterval(() => {
-      if (query.length === 0) {
-        let registeredApps = appRegistry.apps.flatMap((app) => app.app.appFile);
-        registeredApps = registeredApps.filter(
-          (app) => !getAppFromId(app.id)?.isDev,
-        );
-        if (registeredApps.length !== queryApps.length)
-          setQueryApps(registeredApps);
-      }
-    }, 2000);
+    const id = setInterval(
+      () => {
+        if (query.length === 0) {
+          let registeredApps = appRegistry.apps.flatMap(
+            (app) => app.app.appFile,
+          );
+          registeredApps = registeredApps.filter(
+            (app) => !getAppFromId(app.id)?.isDev,
+          );
+          if (registeredApps.length !== queryApps.length)
+            setQueryApps(registeredApps);
+        }
+      },
+      appRegistry.apps.length > 0 ? 2000 : 100,
+    );
 
     return () => clearInterval(id);
   }, [query, queryApps.length]);

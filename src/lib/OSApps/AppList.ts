@@ -29,13 +29,12 @@ for (const mApp of OSFileSystem.getFolder("/.apps")?.items ?? []) {
     makeClassFromTsx(file.value).then((NewApp) => {
       const instance = new NewApp();
       apps.push(instance);
+      apps.map((app) => appRegistry.registerApp(app));
     });
   } catch (err) {
     console.error(`Failed to load app: "${file.name}"`, err);
   }
 }
-
-apps.map((app) => appRegistry.registerApp(app));
 
 export const addApp = (app: OSApp) => {
   appRegistry.registerApp(app);
