@@ -2,6 +2,7 @@ import FilesItem, { File, Folder } from "@/lib/OSApps/apps/files/FilesItem";
 import { canAccessStorage, getSetting, setSetting } from "@/lib/functions";
 
 export class OSFileSystem {
+  public static isInit = false;
   private static listeners: Set<() => void> = new Set();
 
   public static init() {
@@ -29,6 +30,7 @@ export class OSFileSystem {
       OSFileSystem.createFolderFrom(new Folder(".apps", "/.apps"));
       createTemplateFile();
     }
+    this.isInit = true;
   }
 
   public static addListener(callback: () => void): void {

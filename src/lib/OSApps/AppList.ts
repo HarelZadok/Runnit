@@ -21,20 +21,29 @@ export const apps: OSApp[] = [
 ];
 
 // Load runtime apps.
-for (const mApp of OSFileSystem.getFolder("/.apps")?.items ?? []) {
-  const file = mApp as File;
-  if (file.extension !== ".osapp" || !file.value) continue;
+const fetch = async () => {
+  for (const mApp of OSFileSystem.getFolder("/.apps")?.items ?? []) {
+    const file = mApp as File;
+    if (file.extension !== ".osapp" || !file.value) continue;
 
-  try {
-    makeClassFromTsx(file.value).then((NewApp) => {
+    try {
+      const NewApp = await makeClassFromTsx(file.value);
       const instance = new NewApp();
       apps.push(instance);
+    } catch (err) {
+      console.error(`Failed to load app: "${file.name}"`, err);
+    }
+  }
+};
+
+const id = setInterval(() => {
+  if (OSFileSystem.isInit) {
+    fetch().then(() => {
       apps.map((app) => appRegistry.registerApp(app));
     });
-  } catch (err) {
-    console.error(`Failed to load app: "${file.name}"`, err);
+    clearInterval(id);
   }
-}
+}, 100);
 
 export const addApp = (app: OSApp) => {
   appRegistry.registerApp(app);

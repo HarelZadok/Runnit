@@ -78,7 +78,7 @@ export default function Desktop() {
     }
   }, []);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const id = setInterval(() => {
       if (!isOsLoading) clearInterval(id);
       if (appRegistry.apps.length > 0) {
@@ -90,7 +90,7 @@ export default function Desktop() {
     return () => clearInterval(id);
   }, [isOsLoading]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (isOsLoading) dispatch(incrementHideRate());
     else dispatch(decrementHideRate());
   }, [dispatch, isOsLoading]);
