@@ -33,6 +33,7 @@ export default function EditorComponent(props: EditorComponentProps) {
     return new File("temp", "/", ".txt");
   }, [props.args]);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [file, setFile] = useState(getFileFromArgs());
   const [value, setValue] = useState(file.value);
   const [instance, setInstance] = useState<OSApp | null>(null);
