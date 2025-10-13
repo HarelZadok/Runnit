@@ -29,7 +29,6 @@ import AppLauncher from "@/lib/features/appLauncher/AppLauncher";
 import {
   closeApp,
   launchApp,
-  launchAppSilent,
 } from "@/lib/features/windowManager/windowManagerSlice";
 import { changeDesktopBackground } from "@/lib/features/settings/settingsSlice";
 import { canAccessStorage, getSetting } from "@/lib/functions";
@@ -39,9 +38,8 @@ import UpdateNotifier from "@/lib/features/updateNotifier/UpdateNotifier";
 import FilesItem from "@/lib/OSApps/apps/files/FilesItem";
 import { getIdFromAppClass } from "@/lib/OSApps/AppList";
 import Files from "@/lib/OSApps/apps/files/Files";
-import { OrbitProgress, ThreeDot } from "react-loading-indicators";
+import { ThreeDot } from "react-loading-indicators";
 import { motion } from "framer-motion";
-import CodeEditor from "@/lib/OSApps/apps/code_editor/CodeEditor";
 
 export default function Desktop() {
   const [files, setFiles] = useState<FilesItem[]>(
