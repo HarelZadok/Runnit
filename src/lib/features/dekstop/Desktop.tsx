@@ -338,7 +338,7 @@ export default function Desktop() {
       onMouseDown={onDragStart}
     >
       <div
-        className={`${isOsLoading ? "opacity-100" : "opacity-0"} absolute transition-all duration-500 bg-white/30 backdrop-blur-3xl w-full h-full z-99999`}
+        className={`${isOsLoading ? "opacity-100" : "opacity-0"} absolute transition-all duration-500 bg-white/30 backdrop-blur-3xl w-full h-full`}
       >
         {isOsLoading && (
           <div
