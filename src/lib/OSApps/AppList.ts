@@ -26,9 +26,10 @@ for (const mApp of OSFileSystem.getFolder("/.apps")?.items ?? []) {
   if (file.extension !== ".osapp" || !file.value) continue;
 
   try {
-    const NewApp = await makeClassFromTsx(file.value);
-    const instance = new NewApp();
-    apps.push(instance);
+    makeClassFromTsx(file.value).then((NewApp) => {
+      const instance = new NewApp();
+      apps.push(instance);
+    });
   } catch (err) {
     console.error(`Failed to load app: "${file.name}"`, err);
   }
