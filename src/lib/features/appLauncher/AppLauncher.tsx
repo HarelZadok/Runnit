@@ -10,6 +10,7 @@ import appRegistry from "@/lib/OSApps/AppRegistry";
 import { OSAppFile, OSAppFileProps } from "@/lib/features/OSApp/OSAppFile";
 import FilesItem, { AppShortcut } from "@/lib/OSApps/apps/files/FilesItem";
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
+import { getAppFromId } from "@/lib/OSApps/AppList";
 
 export default function AppLauncher() {
   const taskbarHeight = useAppSelector((state) => state.settings.taskbarHeight);
@@ -41,8 +42,9 @@ export default function AppLauncher() {
   useEffect(() => {
     const id = setInterval(() => {
       if (query.length === 0) {
-        const registeredApps = appRegistry.apps.flatMap(
-          (app) => app.app.appFile,
+        let registeredApps = appRegistry.apps.flatMap((app) => app.app.appFile);
+        registeredApps = registeredApps.filter(
+          (app) => !getAppFromId(app.id)?.isDev,
         );
         if (registeredApps.length !== queryApps.length)
           setQueryApps(registeredApps);

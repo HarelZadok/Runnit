@@ -19,7 +19,6 @@ const DirectoryButton = (props: {
       className={`w-full rounded-md ${selected ? "bg-blue-600 text-white" : "hover:bg-gray-300"} py-2 px-2 cursor-pointer`}
       onClick={() => {
         if (props.onClick) props.onClick(props.path);
-        console.log(props.directory.substring(0, props.directory.length - 1));
       }}
     >
       <p>{props.name}</p>

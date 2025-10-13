@@ -13,6 +13,7 @@ import { RiCloseLargeLine } from "react-icons/ri";
 import { FiMaximize, FiMinimize } from "react-icons/fi";
 import { IoIosArrowDown } from "react-icons/io";
 import Image from "next/image";
+import appRegistry from "@/lib/OSApps/AppRegistry";
 
 // OSApp.tsx: Base class for all OS-style applications, handling window control hooks and metadata
 export interface OSAppInterface {
@@ -46,6 +47,7 @@ export default abstract class OSApp
   public isMinimized = false;
   public width = -1;
   public height = -1;
+  public isDev = false;
   protected headerTitle: string;
   private readonly headerHeight: number;
   // Variables
@@ -76,9 +78,15 @@ export default abstract class OSApp
 
     this.headerTitle = "";
 
+    let id = appRegistry.apps.findIndex(
+      (app) => app.app.constructor === this.constructor,
+    );
+
+    if (id < 0) id = OSApp.appCount++;
+
     // Initialize app metadata and default window size
     this.appFile = {
-      id: OSApp.appCount++,
+      id: id,
       name: "",
       icon: "",
     };

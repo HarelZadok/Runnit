@@ -46,6 +46,7 @@ export default function EditorComponent(props: EditorComponentProps) {
 
   useEffect(() => {
     if (instance !== null) {
+      instance.isDev = true;
       const id = addApp(instance);
       if (isAppShowing) {
         dispatch(launchAppSilent({ id }));

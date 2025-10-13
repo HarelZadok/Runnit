@@ -38,7 +38,8 @@ apps.map((app) => appRegistry.registerApp(app));
 
 export const addApp = (app: OSApp) => {
   appRegistry.registerApp(app);
-  apps.push(app);
+  if (app.appFile.id < apps.length) updateApp(app);
+  else apps.push(app);
   return app.appFile.id;
 };
 
@@ -55,4 +56,8 @@ export const updateApp = (app: OSApp) => {
 
 export const getIdFromAppClass = (appClass: typeof OSApp) => {
   return apps.findIndex((app) => app.constructor === appClass);
+};
+
+export const getAppFromId = (id: number) => {
+  return apps.length > id ? apps[id] : null;
 };
