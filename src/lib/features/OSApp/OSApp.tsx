@@ -436,7 +436,23 @@ export default abstract class OSApp
           }}
         />
         {this.header()}
-        <div className="h-full w-full overflow-hidden">{this.body()}</div>
+        <div className="h-full w-full overflow-hidden">
+          {(() => {
+            try {
+              return this.body();
+            } catch (e) {
+              const error = e as Error;
+              return (
+                <div className="bg-black h-full w-full text-white flex flex-col justify-center items-center gap-4">
+                  <p className="text-3xl justify-self-start">
+                    Error rendering window!
+                  </p>
+                  <p className="text-lg">{error.message}</p>
+                </div>
+              );
+            }
+          })()}
+        </div>
       </div>
     );
   }

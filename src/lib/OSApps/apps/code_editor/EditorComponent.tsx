@@ -167,6 +167,8 @@ declare module "runnit/OSApp" {
 
     protected setAppFile(input: { name?: string; icon?: string }): void;
     protected addHeaderTrailingItem(item: import("react").ReactElement): void;
+    protected removeHeaderTrailingItem(item: import("react").ReactElement): void;
+    protected setHeaderTrailingItems(items: import("react").ReactElement[]): void;
   }
 }
 `,
