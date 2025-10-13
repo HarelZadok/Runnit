@@ -451,15 +451,17 @@ export default abstract class OSApp
     };
   }
 
-  protected setAppFile = ({
+  public setAppFile = ({
     name = undefined,
     icon = undefined,
+    id = undefined,
   }: {
     name?: string;
     icon?: string;
+    id?: number;
   }) => {
     this.appFile = {
-      id: this.appFile.id,
+      id: id ?? this.appFile.id,
       name: name ?? this.appFile.name,
       icon: icon ?? this.appFile.icon,
     };
@@ -469,6 +471,16 @@ export default abstract class OSApp
 
   protected addHeaderTrailingItem = (headerItem: ReactElement) => {
     this.headerTrailingItems.push(headerItem);
+  };
+
+  protected removeHeaderTrailingItem = (headerItem: ReactElement) => {
+    this.headerTrailingItems = this.headerTrailingItems.filter(
+      (item) => item !== headerItem,
+    );
+  };
+
+  protected setHeaderTrailingItems = (items: ReactElement[]) => {
+    this.headerTrailingItems = items;
   };
 
   protected mOnGrabStart = (event: ReactDragEvent<HTMLDivElement>) => {

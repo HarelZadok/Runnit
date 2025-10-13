@@ -5,6 +5,7 @@ import FilesItem, { AppShortcut, File } from "./OSApps/apps/files/FilesItem";
 import { launchApp } from "./features/windowManager/windowManagerSlice";
 import { getIdFromAppClass } from "./OSApps/AppList";
 import CodeEditor from "./OSApps/apps/code_editor/CodeEditor";
+import OSApp from "@/lib/features/OSApp/OSApp";
 
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
 export const useAppSelector = useSelector.withTypes<RootState>();
@@ -22,8 +23,15 @@ export const useOpenFile = () => {
         launchApp({
           id,
           args: ["--file", file!.path],
-        })
+        }),
       );
     }
   };
+};
+
+export const useIsAppShowing = (app: OSApp | null) => {
+  const openApps = useAppSelector((state) => state.windowManager.openApps);
+  if (!app) return false;
+  const cApp = openApps.find((cApp) => cApp.pid === app.appFile.id);
+  return cApp && !cApp.isMinimized;
 };

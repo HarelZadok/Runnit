@@ -1,11 +1,23 @@
 import Editor, { Monaco } from "@monaco-editor/react";
 import { editor } from "monaco-editor";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import { OSFileSystem } from "../files/OSFileSystem";
 import { File } from "../files/FilesItem";
+import { useAppDispatch, useIsAppShowing } from "@/lib/hooks";
+import OSApp from "@/lib/features/OSApp/OSApp";
+import { addApp, updateApp } from "@/lib/OSApps/AppList";
+import {
+  launchApp,
+  launchAppSilent,
+  updateWindowRender,
+} from "@/lib/features/windowManager/windowManagerSlice";
+import { makeClassFromTsx } from "@/lib/runtimeCompiler";
+import { FaPlay } from "react-icons/fa";
 
 interface EditorComponentProps {
   args: string[];
+  addHeaderTrailingItem: (headerItem: ReactElement) => void;
+  removeHeaderTrailingItem: (headerItem: ReactElement) => void;
 }
 
 export default function EditorComponent(props: EditorComponentProps) {
@@ -23,10 +35,41 @@ export default function EditorComponent(props: EditorComponentProps) {
 
   const [file, setFile] = useState(getFileFromArgs());
   const [value, setValue] = useState(file.value);
+  const [instance, setInstance] = useState<OSApp | null>(null);
 
   useEffect(() => {
     if (file) OSFileSystem.updateFileValue(file, value);
   }, [file, value]);
+
+  const dispatch = useAppDispatch();
+  const isAppShowing = useIsAppShowing(instance);
+
+  useEffect(() => {
+    if (instance !== null) {
+      const id = addApp(instance);
+      if (isAppShowing) {
+        dispatch(launchAppSilent({ id }));
+        dispatch(updateWindowRender(id));
+      } else dispatch(launchApp({ id }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [instance, dispatch]);
+
+  const { addHeaderTrailingItem, removeHeaderTrailingItem, args } = props;
+  useEffect(() => {
+    const button = (
+      <StartButton instance={instance} setInstance={setInstance} args={args} />
+    );
+    if (file.extension === ".osapp") addHeaderTrailingItem(button);
+
+    return () => removeHeaderTrailingItem(button);
+  }, [
+    addHeaderTrailingItem,
+    args,
+    file.extension,
+    instance,
+    removeHeaderTrailingItem,
+  ]);
 
   // Configure TS *before* Editor creates the model.
   const handleBeforeMount = async (monaco: Monaco) => {
@@ -150,7 +193,24 @@ declare module "runnit/OSApp" {
   };
 
   return (
-    <div className="w-full h-full">
+    <div
+      onKeyDown={async (e) => {
+        if (e.ctrlKey && e.key === "s") {
+          e.preventDefault();
+          if (isAppShowing) {
+            const NewApp = await makeClassFromTsx(getFileFromArgs().value);
+            const newInstance = new NewApp() as OSApp;
+            const newAppFile = {
+              ...newInstance.appFile,
+              id: instance!.appFile.id,
+            };
+            newInstance.setAppFile(newAppFile);
+            if (updateApp(newInstance)) setInstance(newInstance);
+          }
+        }
+      }}
+      className="w-full h-full"
+    >
       <Editor
         width="100%"
         height="100%"
@@ -167,3 +227,48 @@ declare module "runnit/OSApp" {
     </div>
   );
 }
+
+const StartButton = ({
+  args,
+  instance,
+  setInstance,
+}: {
+  args: string[];
+  instance: OSApp | null;
+  setInstance: (app: OSApp | null) => void;
+}) => {
+  const getFileFromArgs = (args: string[]) => {
+    const fileArgIndex = args.indexOf("--file");
+    if (fileArgIndex >= 0) {
+      const filePath = args[fileArgIndex + 1];
+      return OSFileSystem.getFile(filePath) ?? new File("temp", "/", ".txt");
+    }
+    return new File("temp", "/", ".txt");
+  };
+
+  return (
+    <div className="flex flex-row justify-center items-center h-full">
+      <button
+        className="flex justify-center items-center hover:bg-[#00C000] text-[#00C000] hover:text-white cursor-pointer p-1.5 rounded-md"
+        onClick={async () => {
+          if (instance === null) {
+            const NewApp = await makeClassFromTsx(getFileFromArgs(args).value);
+            setInstance(new NewApp());
+          } else {
+            const NewApp = await makeClassFromTsx(getFileFromArgs(args).value);
+            const newInstance = new NewApp() as OSApp;
+            const newAppFile = {
+              ...newInstance.appFile,
+              id: instance!.appFile.id,
+            };
+            newInstance.setAppFile(newAppFile);
+            if (updateApp(newInstance)) setInstance(newInstance);
+          }
+        }}
+      >
+        <FaPlay />
+      </button>
+      <div className="bg-gray-500 h-[70%] w-[1px] mx-2" />
+    </div>
+  );
+};

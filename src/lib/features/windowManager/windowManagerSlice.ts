@@ -34,7 +34,7 @@ export const windowManagerSlice = createSlice({
     // Launch or focus an app window; increments z-index and handles restore
     launchApp: (
       state,
-      action: PayloadAction<{ id: number; args?: string[] }>
+      action: PayloadAction<{ id: number; args?: string[] }>,
     ) => {
       state.lastUnfocusedApp = -1;
       state.focusZIndex++;
@@ -55,10 +55,27 @@ export const windowManagerSlice = createSlice({
           args: action.payload.args ?? [],
         });
     },
+    launchAppSilent: (
+      state,
+      action: PayloadAction<{ id: number; args?: string[] }>,
+    ) => {
+      const app = state.openApps.find((app) => app.pid === action.payload.id);
+      if (!app) {
+        state.openApps.push({
+          pid: action.payload.id,
+          isMinimized: false,
+          isMaximized:
+            getSetting("windowPrefs" + action.payload.id)?.isMaximized ?? false,
+          isFocused: false,
+          zIndex: 1000,
+          args: action.payload.args ?? [],
+        });
+      }
+    },
     // Close window and adjust z-index for remaining windows
     closeApp: (state, action: PayloadAction<number>) => {
       state.openApps = state.openApps.filter(
-        (instance) => instance.pid !== action.payload
+        (instance) => instance.pid !== action.payload,
       );
       if (state.openApps.length === 0) {
         state.focusZIndex = 1000;
@@ -141,6 +158,13 @@ export const windowManagerSlice = createSlice({
         state.lastUnfocusedApp = -1;
       }
     },
+    updateWindowRender: (state, action: PayloadAction<number>) => {
+      const app = state.openApps.find((app) => app.pid === action.payload);
+      if (app) {
+        app.isFocused = true;
+        app.isFocused = false;
+      }
+    },
     toggleAppLauncher: (state) => {
       state.isAppLauncherPresent = !state.isAppLauncherPresent;
     },
@@ -155,6 +179,7 @@ export const windowManagerSlice = createSlice({
 
 export const {
   launchApp,
+  launchAppSilent,
   closeApp,
   minimizeApp,
   unminimizeApp,
@@ -165,5 +190,6 @@ export const {
   toggleAppLauncher,
   indicateFullscreen,
   unindicateFullscreen,
+  updateWindowRender,
 } = windowManagerSlice.actions;
 export default windowManagerSlice.reducer;

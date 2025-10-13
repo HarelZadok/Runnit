@@ -28,7 +28,6 @@ for (const mApp of OSFileSystem.getFolder("/.apps")?.items ?? []) {
   try {
     const NewApp = await makeClassFromTsx(file.value);
     const instance = new NewApp();
-    console.log(instance.appFile.id);
     apps.push(instance);
   } catch (err) {
     console.error(`Failed to load app: "${file.name}"`, err);
@@ -36,6 +35,23 @@ for (const mApp of OSFileSystem.getFolder("/.apps")?.items ?? []) {
 }
 
 apps.map((app) => appRegistry.registerApp(app));
+
+export const addApp = (app: OSApp) => {
+  appRegistry.registerApp(app);
+  apps.push(app);
+  return app.appFile.id;
+};
+
+export const updateApp = (app: OSApp) => {
+  const i = apps.findIndex((cApp) => cApp.appFile.id === app.appFile.id);
+  if (i >= 0) {
+    if (!appRegistry.updateApp(app)) return false;
+
+    apps[i] = app;
+    return true;
+  }
+  return false;
+};
 
 export const getIdFromAppClass = (appClass: typeof OSApp) => {
   return apps.findIndex((app) => app.constructor === appClass);

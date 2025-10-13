@@ -2,7 +2,7 @@
 "use client";
 
 import OSApp, { OSAppProps } from "@/lib/features/OSApp/OSApp";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useReducer } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
   addOpenTaskbarApp,
@@ -36,7 +36,6 @@ export interface OSAppWindowProps {
 
 export default function OSAppWindow({ props, app }: OSAppWindowProps) {
   const dispatch = useAppDispatch();
-
   // Retrieve size and position settings from Redux
   const taskbarHeight = useAppSelector((state) => state.settings.taskbarHeight);
   const instance = useAppSelector((state) => state.windowManager.openApps).find(
@@ -94,7 +93,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
 
   useEffect(() => {
     setTimeout(() => setStartOpacity(1), 1);
-  }, []);
+  }, [app.appFile.id]);
 
   useEffect(() => {
     const bottom = position.y + height;
