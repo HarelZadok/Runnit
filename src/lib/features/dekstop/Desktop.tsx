@@ -41,6 +41,7 @@ import { getIdFromAppClass } from "@/lib/OSApps/AppList";
 import Files from "@/lib/OSApps/apps/files/Files";
 import { OrbitProgress, ThreeDot } from "react-loading-indicators";
 import { motion } from "framer-motion";
+import CodeEditor from "@/lib/OSApps/apps/code_editor/CodeEditor";
 
 export default function Desktop() {
   const [files, setFiles] = useState<FilesItem[]>(
@@ -81,22 +82,13 @@ export default function Desktop() {
 
   useLayoutEffect(() => {
     if (isOsLoading) {
-      const id = getIdFromAppClass(Files);
       dispatch(incrementHideRate());
-      dispatch(launchAppSilent({ id }));
-    }
-  }, [dispatch, isOsLoading]);
-
-  useLayoutEffect(() => {
-    if (isOsLoading && openApps.length > 0) {
       setTimeout(() => {
-        const id = getIdFromAppClass(Files);
-        dispatch(closeApp(id));
         dispatch(decrementHideRate());
         setIsOsLoading(false);
       }, 1000);
     }
-  }, [dispatch, isOsLoading, openApps]);
+  }, [dispatch, isOsLoading]);
 
   useEffect(() => {
     const onFilesUpdate = () => {
@@ -347,6 +339,24 @@ export default function Desktop() {
       onMouseMove={onMouseMove}
       onMouseDown={onDragStart}
     >
+      <div
+        className={`${isOsLoading ? "opacity-100" : "opacity-0"} absolute transition-all duration-500 bg-white/30 backdrop-blur-3xl w-full h-full z-99999`}
+      >
+        {isOsLoading && (
+          <div
+            className="select-none h-full w-full flex justify-center items-center"
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <ThreeDot
+              variant="brick-stack"
+              color="black"
+              size="large"
+              speedPlus={1}
+            />
+          </div>
+        )}
+      </div>
       {isSelecting &&
         selectionXStart >= 0 &&
         selectionYStart >= 0 &&
@@ -368,8 +378,11 @@ export default function Desktop() {
             }}
           ></div>
         )}
-      {columnHeight !== -1 && (
-        <div
+      {columnHeight !== -1 && !isOsLoading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 100 }}
+          transition={{ ease: "easeInOut" }}
           className="gap-3 h-full px-1 grid z-10"
           style={{
             paddingBottom: taskbarHeight + 30,
@@ -421,26 +434,8 @@ export default function Desktop() {
               />
             );
           })}
-        </div>
+        </motion.div>
       )}
-      <div
-        className={`${isOsLoading ? "opacity-100" : "opacity-0"} absolute transition-all duration-500 bg-white/30 backdrop-blur-3xl w-screen h-screen `}
-      >
-        {isOsLoading && (
-          <div
-            className="select-none h-full w-full flex justify-center items-center"
-            onClick={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <ThreeDot
-              variant="brick-stack"
-              color="black"
-              size="large"
-              speedPlus={1}
-            />
-          </div>
-        )}
-      </div>
       {!isOsLoading && (
         <motion.div
           initial={{ y: 100 }}

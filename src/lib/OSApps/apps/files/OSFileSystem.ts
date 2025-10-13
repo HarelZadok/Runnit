@@ -326,7 +326,10 @@ const createTemplateFile = () => {
         "  </div>;\n" +
         "};\n" +
         "\n" +
-        "const MainComponent = ({addHeaderTrailingItem, removeHeaderTrailingItem}: {addHeaderTrailingItem: (item: ReactElement) => void, removeHeaderTrailingItem: (item: ReactElement) => void}) => {\n" +
+        "const MainComponent = (\n" +
+        "  {addHeaderTrailingItem, removeHeaderTrailingItem}: \n" +
+        "  {addHeaderTrailingItem: (item: ReactElement) => void, removeHeaderTrailingItem: (item: ReactElement) => void}\n" +
+        ") => {\n" +
         "  const [n, setN] = useState(0);\n" +
         "  const [color, setColor] = useState('rgb(255,255,255)');\n" +
         "  \n" +
@@ -337,7 +340,7 @@ const createTemplateFile = () => {
         "    return () => removeHeaderTrailingItem(item);\n" +
         "  }, []);\n" +
         "\n" +
-        '  return <div className="w-full h-full bg-white flex flex-col items-center p-10 bg-gray-700">\n' +
+        '  return <div className="w-full h-full flex flex-col items-center p-10 bg-gray-700">\n' +
         '    <p style={{color: color}} className="text-[50px] pb-10 font-bold">Hello, Runnit!</p>\n' +
         '    <div className="flex flex-col justify-center items-center h-full w-full gap-5 bg-white rounded-3xl">\n' +
         '      <button className="bg-blue-500 p-3 rounded-lg text-xl" onClick={() => setN(p => p + 1)}>Click me!</button>\n' +
