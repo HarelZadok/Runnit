@@ -25,7 +25,7 @@ export const desktopSlice = createSlice({
     },
     removeActiveDesktopApp: (state, action: PayloadAction<number>) => {
       state.activeDesktopFiles = state.activeDesktopFiles.filter(
-        (app) => app !== action.payload
+        (app) => app !== action.payload,
       );
     },
   },

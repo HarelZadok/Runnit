@@ -63,7 +63,7 @@ export const windowManagerSlice = createSlice({
       if (!app) {
         state.openApps.push({
           pid: action.payload.id,
-          isMinimized: false,
+          isMinimized: true,
           isMaximized:
             getSetting("windowPrefs" + action.payload.id)?.isMaximized ?? false,
           isFocused: false,

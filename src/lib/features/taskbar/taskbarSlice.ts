@@ -33,7 +33,7 @@ const taskbarSlice = createSlice({
     },
     unpinTaskbarApp: (state, app: PayloadAction<OSAppFileProps>) => {
       state.pinnedTaskbarApps = state.pinnedTaskbarApps.filter(
-        (cApp) => cApp.id !== app.payload.id
+        (cApp) => cApp.id !== app.payload.id,
       );
       setSetting("pinnedTaskbarApps", state.pinnedTaskbarApps);
     },
@@ -42,7 +42,7 @@ const taskbarSlice = createSlice({
     },
     removeOpenTaskbarApp: (state, app: PayloadAction<OSAppFileProps>) => {
       state.openedTaskbarApps = state.openedTaskbarApps.filter(
-        (cApp) => cApp.id !== app.payload.id
+        (cApp) => cApp.id !== app.payload.id,
       );
     },
     incrementHideRate: (state) => {

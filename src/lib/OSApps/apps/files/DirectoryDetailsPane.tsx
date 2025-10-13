@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import FilesItem, { Folder, File } from "@/lib/OSApps/apps/files/FilesItem";
+import FilesItem, { File, Folder } from "@/lib/OSApps/apps/files/FilesItem";
 import { OSAppFile } from "@/lib/features/OSApp/OSAppFile";
 import { useOpenFile } from "@/lib/hooks";
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";

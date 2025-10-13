@@ -21,12 +21,15 @@ import appRegistry from "@/lib/OSApps/AppRegistry";
 import "@/lib/OSApps/AppList";
 import {
   cancelShowTaskbar,
+  decrementHideRate,
+  incrementHideRate,
   showTaskbar,
 } from "@/lib/features/taskbar/taskbarSlice";
 import AppLauncher from "@/lib/features/appLauncher/AppLauncher";
 import {
   closeApp,
   launchApp,
+  launchAppSilent,
 } from "@/lib/features/windowManager/windowManagerSlice";
 import { changeDesktopBackground } from "@/lib/features/settings/settingsSlice";
 import { canAccessStorage, getSetting } from "@/lib/functions";
@@ -36,6 +39,8 @@ import UpdateNotifier from "@/lib/features/updateNotifier/UpdateNotifier";
 import FilesItem from "@/lib/OSApps/apps/files/FilesItem";
 import { getIdFromAppClass } from "@/lib/OSApps/AppList";
 import Files from "@/lib/OSApps/apps/files/Files";
+import { OrbitProgress, ThreeDot } from "react-loading-indicators";
+import { motion } from "framer-motion";
 
 export default function Desktop() {
   const [files, setFiles] = useState<FilesItem[]>(
@@ -63,6 +68,8 @@ export default function Desktop() {
   const itemRefs = useRef<HTMLDivElement[]>([]);
   const dispatch = useAppDispatch();
 
+  const [isOsLoading, setIsOsLoading] = useState(true);
+
   const cursorY = useRef(0);
 
   const updateRef = useRef(false);
@@ -71,6 +78,25 @@ export default function Desktop() {
       updateRef.current = true;
     }
   }, []);
+
+  useLayoutEffect(() => {
+    if (isOsLoading) {
+      const id = getIdFromAppClass(Files);
+      dispatch(incrementHideRate());
+      dispatch(launchAppSilent({ id }));
+    }
+  }, [dispatch, isOsLoading]);
+
+  useLayoutEffect(() => {
+    if (isOsLoading && openApps.length > 0) {
+      setTimeout(() => {
+        const id = getIdFromAppClass(Files);
+        dispatch(closeApp(id));
+        dispatch(decrementHideRate());
+        setIsOsLoading(false);
+      }, 1000);
+    }
+  }, [dispatch, isOsLoading, openApps]);
 
   useEffect(() => {
     const onFilesUpdate = () => {
@@ -397,7 +423,33 @@ export default function Desktop() {
           })}
         </div>
       )}
-      <Taskbar />
+      <div
+        className={`${isOsLoading ? "opacity-100" : "opacity-0"} absolute transition-all duration-500 bg-white/30 backdrop-blur-3xl w-screen h-screen `}
+      >
+        {isOsLoading && (
+          <div
+            className="select-none h-full w-full flex justify-center items-center"
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <ThreeDot
+              variant="brick-stack"
+              color="black"
+              size="large"
+              speedPlus={1}
+            />
+          </div>
+        )}
+      </div>
+      {!isOsLoading && (
+        <motion.div
+          initial={{ y: 100 }}
+          animate={{ y: 0 }}
+          transition={{ ease: "easeInOut" }}
+        >
+          <Taskbar />
+        </motion.div>
+      )}
       <AppLauncher />
       {openApps.map((app) => showApp(app.pid, app.args))}
       <div

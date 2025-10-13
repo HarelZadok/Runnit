@@ -5,14 +5,14 @@ import { useAppSelector } from "@/lib/hooks"; // Typed Redux hooks
 import Image from "next/image";
 import React, {
   forwardRef,
-  useCallback,
-  useState,
-  useEffect,
   JSX,
+  useCallback,
+  useEffect,
+  useState,
 } from "react";
 import { Property } from "csstype";
-import TextDecorationColor = Property.TextDecorationColor;
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
+import TextDecorationColor = Property.TextDecorationColor;
 
 export interface OSAppFileProps {
   readonly id: number;

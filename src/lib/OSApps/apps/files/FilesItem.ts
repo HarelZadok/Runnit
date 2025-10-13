@@ -22,12 +22,18 @@ export class File extends FilesItem {
   public extension: string;
   public value: string;
 
-  constructor(name: string, path: string, extension: string, icon?: string) {
+  constructor(
+    name: string,
+    path: string,
+    extension: string,
+    icon?: string,
+    value?: string,
+  ) {
     super(name, path, icon ?? "/icons/file.png");
     this.size = 0;
     this.dateOfCreation = Date.now();
     this.extension = extension;
-    this.value = "";
+    this.value = value ?? "";
   }
 }
 

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import React from "react";
+import React, { Suspense } from "react";
 import { headers } from "next/headers";
 import { isMobile } from "@/lib/functions";
 import Script from "next/script";
@@ -32,11 +32,13 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`antialiased`}>
-        <Script
-          src="https://cdn.tailwindcss.com"
-          strategy="beforeInteractive"
-        />
-        {children}
+        <Suspense fallback={<div className="w-full h-full bg-black"></div>}>
+          <Script
+            src="https://cdn.tailwindcss.com"
+            strategy="beforeInteractive"
+          />
+          {children}
+        </Suspense>
       </body>
     </html>
   );

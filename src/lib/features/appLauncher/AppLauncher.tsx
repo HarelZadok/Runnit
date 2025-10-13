@@ -39,6 +39,20 @@ export default function AppLauncher() {
   }, []);
 
   useEffect(() => {
+    const id = setInterval(() => {
+      if (query.length === 0) {
+        const registeredApps = appRegistry.apps.flatMap(
+          (app) => app.app.appFile,
+        );
+        if (registeredApps.length !== queryApps.length)
+          setQueryApps(registeredApps);
+      }
+    }, 2000);
+
+    return () => clearInterval(id);
+  }, [query, queryApps.length]);
+
+  useEffect(() => {
     let registeredApps = appRegistry.apps.flatMap((app) => app.app.appFile);
     if (query.length !== 0) {
       registeredApps = registeredApps.filter(

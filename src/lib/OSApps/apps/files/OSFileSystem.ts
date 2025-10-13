@@ -1,4 +1,4 @@
-import FilesItem, { Folder, File } from "@/lib/OSApps/apps/files/FilesItem";
+import FilesItem, { File, Folder } from "@/lib/OSApps/apps/files/FilesItem";
 import { canAccessStorage, getSetting, setSetting } from "@/lib/functions";
 
 export class OSFileSystem {
@@ -27,6 +27,7 @@ export class OSFileSystem {
       );
       OSFileSystem.createFolderFrom(new Folder(".dev", "/.dev"));
       OSFileSystem.createFolderFrom(new Folder(".apps", "/.apps"));
+      createTemplateFile();
     }
   }
 
@@ -278,3 +279,72 @@ export class OSFileSystem {
     return true;
   }
 }
+
+const createTemplateFile = () => {
+  OSFileSystem.createFile(
+    new File(
+      "Template",
+      "/.apps/Template.osapp",
+      ".osapp",
+      undefined,
+      'import OSApp, { OSAppProps } from "runnit/OSApp";\n' +
+        "import { useState, useEffect, ReactElement } from 'react'\n" +
+        "\n" +
+        "export default class Runnit extends OSApp {\n" +
+        "  constructor(props?: OSAppProps) {\n" +
+        "    super(props);\n" +
+        "    \n" +
+        "    this.setAppFile({\n" +
+        "      name: 'Runnit App',\n" +
+        "      icon: '/icons/runnit-transparent.png',\n" +
+        "    });\n" +
+        "\n" +
+        "    this.minimumHeight = 550;\n" +
+        "    this.minimumWidth = 750;\n" +
+        "  };\n" +
+        "\n" +
+        "  body = () => {\n" +
+        "    return <MainComponent \n" +
+        "      addHeaderTrailingItem={this.addHeaderTrailingItem} \n" +
+        "      removeHeaderTrailingItem={this.removeHeaderTrailingItem} \n" +
+        "    />;\n" +
+        "  };\n" +
+        "}\n" +
+        "\n" +
+        "const ItemComponent = ({setColor}: {setColor: (color: string) => void;}) => {\n" +
+        "  return <div>\n" +
+        "    <button \n" +
+        "      onClick={() => {\n" +
+        "        const x = Math.random() * 255;\n" +
+        "        const y = Math.random() * 255;\n" +
+        "        const z = Math.random() * 255;\n" +
+        "        setColor(`rgb(${x},${y},${z})`);\n" +
+        "      }}\n" +
+        '      className="w-max text-center h-full text-green-500 hover:text-black bg-transparent hover:bg-green-500 p-2">\n' +
+        "      Click me!\n" +
+        "    </button>\n" +
+        "  </div>;\n" +
+        "};\n" +
+        "\n" +
+        "const MainComponent = ({addHeaderTrailingItem, removeHeaderTrailingItem}: {addHeaderTrailingItem: (item: ReactElement) => void, removeHeaderTrailingItem: (item: ReactElement) => void}) => {\n" +
+        "  const [n, setN] = useState(0);\n" +
+        "  const [color, setColor] = useState('rgb(255,255,255)');\n" +
+        "  \n" +
+        "  useEffect(() => {\n" +
+        "    const item = <ItemComponent setColor={setColor}/>;\n" +
+        "    addHeaderTrailingItem(item);\n" +
+        "\n" +
+        "    return () => removeHeaderTrailingItem(item);\n" +
+        "  }, []);\n" +
+        "\n" +
+        '  return <div className="w-full h-full bg-white flex flex-col items-center p-10 bg-gray-700">\n' +
+        '    <p style={{color: color}} className="text-[50px] pb-10 font-bold">Hello, Runnit!</p>\n' +
+        '    <div className="flex flex-col justify-center items-center h-full w-full gap-5 bg-white rounded-3xl">\n' +
+        '      <button className="bg-blue-500 p-3 rounded-lg text-xl" onClick={() => setN(p => p + 1)}>Click me!</button>\n' +
+        '      <p className="text-2xl text-black">{n}</p>\n' +
+        "    </div>\n" +
+        "  </div>;\n" +
+        "};",
+    ),
+  );
+};

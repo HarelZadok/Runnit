@@ -27,7 +27,10 @@ export default class Files extends OSApp {
   body(): JSX.Element {
     return (
       <div className="h-full w-full flex flex-row">
-        <DirectoriesPane onDirectory={this.handleOnDirectory} />
+        <DirectoriesPane
+          onDirectory={this.handleOnDirectory}
+          directory={this.state.currentDirectory}
+        />
         <DirectoryDetailsPane
           onDirectory={this.handleOnDirectory}
           directory={this.state.currentDirectory}

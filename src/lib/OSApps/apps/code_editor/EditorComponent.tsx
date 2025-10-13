@@ -149,6 +149,8 @@ declare module "runnit/OSApp" {
     args: string[];
     isMaximized: boolean;
     isMinimized: boolean;
+    width: number;
+    height: number;
 
     constructor(props?: OSAppProps);
     header(): import("react").ReactElement;
@@ -169,6 +171,12 @@ declare module "runnit/OSApp" {
     protected addHeaderTrailingItem(item: import("react").ReactElement): void;
     protected removeHeaderTrailingItem(item: import("react").ReactElement): void;
     protected setHeaderTrailingItems(items: import("react").ReactElement[]): void;
+    protected mOnGrabStart(event: import("react").DragEvent<HTMLDivElement>): void;
+    protected mOnGrabbing(event: MouseEvent): void;
+    protected mOnGrabEnd(event: MouseEvent): void;
+    protected mOnResizeStart(event: import("react").MouseEvent): void;
+    protected mOnResizing(event: MouseEvent): void;
+    protected mOnResizeEnd(event: MouseEvent): void;
   }
 }
 `,
@@ -196,6 +204,7 @@ declare module "runnit/OSApp" {
 
   return (
     <div
+      className="w-full h-full flex flex-col"
       onKeyDown={async (e) => {
         if (e.ctrlKey && e.key === "s") {
           e.preventDefault();
@@ -211,7 +220,6 @@ declare module "runnit/OSApp" {
           }
         }
       }}
-      className="w-full h-full"
     >
       <Editor
         width="100%"
@@ -224,7 +232,7 @@ declare module "runnit/OSApp" {
         path="file:///virtual/dynamic-app.tsx"
         beforeMount={handleBeforeMount}
         onMount={handleMount}
-        options={{ automaticLayout: true }}
+        options={{ autoIndent: "full", automaticLayout: true }}
       />
     </div>
   );

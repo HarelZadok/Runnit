@@ -2,7 +2,7 @@
 "use client";
 
 import OSApp, { OSAppProps } from "@/lib/features/OSApp/OSApp";
-import React, { useEffect, useState, useRef, useReducer } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import {
   addOpenTaskbarApp,
@@ -155,6 +155,8 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
     if (!instance) return;
 
     instance.isMaximized = maximized;
+    instance.width = width;
+    instance.height = height;
 
     // Drag start: capture initial mouse
     instance.setOnGrabStart((e) => {

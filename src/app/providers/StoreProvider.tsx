@@ -2,7 +2,7 @@
 
 import React, { useRef } from "react";
 import { Provider } from "react-redux";
-import { makeStore, AppStore } from "@/lib/store";
+import { AppStore, makeStore } from "@/lib/store";
 
 // StoreProvider: wraps app with Redux provider and persists store instance
 export default function StoreProvider({

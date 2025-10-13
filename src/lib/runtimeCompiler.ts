@@ -1,5 +1,3 @@
-"use client";
-
 import * as esbuild from "esbuild-wasm";
 import OSApp from "@/lib/features/OSApp/OSApp";
 import React from "react";

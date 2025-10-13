@@ -1,12 +1,12 @@
 "use client";
 
-import {
+import React, {
   cloneElement,
   Component,
-  JSX,
-  ReactElement,
   DragEvent as ReactDragEvent,
+  JSX,
   MouseEvent as ReactMouseEvent,
+  ReactElement,
 } from "react";
 import { OSAppFileProps } from "@/lib/features/OSApp/OSAppFile";
 import { RiCloseLargeLine } from "react-icons/ri";
@@ -44,6 +44,8 @@ export default abstract class OSApp
   public args: string[];
   public isMaximized = false;
   public isMinimized = false;
+  public width = -1;
+  public height = -1;
   protected headerTitle: string;
   private readonly headerHeight: number;
   // Variables
@@ -158,7 +160,7 @@ export default abstract class OSApp
         <div
           draggable
           // onContextMenu={onContextMenu}
-          onDragStart={this.mOnGrabStart}
+          onDragStart={this.mOnGrabStart.bind(this)}
           onDoubleClick={() => {
             this.setMaximize(!this.isMaximized);
           }}
@@ -222,7 +224,7 @@ export default abstract class OSApp
         <div
           id="north"
           draggable
-          onMouseDownCapture={this.mOnResizeStart}
+          onMouseDownCapture={this.mOnResizeStart.bind(this)}
           onMouseOverCapture={() => {
             if (this.isResizing) return;
 
@@ -248,7 +250,7 @@ export default abstract class OSApp
         <div
           id="north-east"
           draggable
-          onMouseDownCapture={this.mOnResizeStart}
+          onMouseDownCapture={this.mOnResizeStart.bind(this)}
           onMouseOverCapture={() => {
             if (this.isResizing) return;
 
@@ -276,7 +278,7 @@ export default abstract class OSApp
         <div
           id="north-west"
           draggable
-          onMouseDownCapture={this.mOnResizeStart}
+          onMouseDownCapture={this.mOnResizeStart.bind(this)}
           onMouseOverCapture={() => {
             if (this.isResizing) return;
 
@@ -304,7 +306,7 @@ export default abstract class OSApp
         <div
           id="south"
           draggable
-          onMouseDownCapture={this.mOnResizeStart}
+          onMouseDownCapture={this.mOnResizeStart.bind(this)}
           onMouseOverCapture={() => {
             if (this.isResizing) return;
 
@@ -330,7 +332,7 @@ export default abstract class OSApp
         <div
           id="south-east"
           draggable
-          onMouseDownCapture={this.mOnResizeStart}
+          onMouseDownCapture={this.mOnResizeStart.bind(this)}
           onMouseOverCapture={() => {
             if (this.isResizing) return;
 
@@ -358,7 +360,7 @@ export default abstract class OSApp
         <div
           id="south-west"
           draggable
-          onMouseDownCapture={this.mOnResizeStart}
+          onMouseDownCapture={this.mOnResizeStart.bind(this)}
           onMouseOverCapture={() => {
             if (this.isResizing) return;
 
@@ -386,7 +388,7 @@ export default abstract class OSApp
         <div
           id="east"
           draggable
-          onMouseDownCapture={this.mOnResizeStart}
+          onMouseDownCapture={this.mOnResizeStart.bind(this)}
           onMouseOverCapture={() => {
             if (this.isResizing) return;
 
@@ -412,7 +414,7 @@ export default abstract class OSApp
         <div
           id="west"
           draggable
-          onMouseDownCapture={this.mOnResizeStart}
+          onMouseDownCapture={this.mOnResizeStart.bind(this)}
           onMouseOverCapture={() => {
             if (this.isResizing) return;
 
@@ -499,28 +501,28 @@ export default abstract class OSApp
     this.headerTrailingItems = items;
   };
 
-  protected mOnGrabStart = (event: ReactDragEvent<HTMLDivElement>) => {
+  protected mOnGrabStart(event: ReactDragEvent<HTMLDivElement>) {
     // Begin drag, invoke external handler if provided
     event.preventDefault();
     event.stopPropagation();
 
-    document.onmousemove = this.mOnGrabbing;
-    document.onmouseup = this.mOnGrabEnd;
+    document.onmousemove = this.mOnGrabbing.bind(this);
+    document.onmouseup = this.mOnGrabEnd.bind(this);
 
     this.isDragging = true;
     if (this.onGrab) this.onGrab(event);
-  };
+  }
 
-  protected mOnGrabbing = (event: MouseEvent) => {
+  protected mOnGrabbing(event: MouseEvent) {
     // Continue drag movement
     if (!this.isDragging) return;
 
     event.stopPropagation();
 
     if (this.onGrabbing) this.onGrabbing(event);
-  };
+  }
 
-  protected mOnGrabEnd = (event: MouseEvent) => {
+  protected mOnGrabEnd(event: MouseEvent) {
     // End drag, invoke release handler
     if (!this.isDragging) return;
 
@@ -531,17 +533,17 @@ export default abstract class OSApp
 
     if (this.onRelease) this.onRelease(event);
     this.isDragging = false;
-  };
+  }
 
-  protected mOnResizeStart = (event: ReactMouseEvent) => {
+  protected mOnResizeStart(event: ReactMouseEvent) {
     if (this.isResizing) return;
 
     event.stopPropagation();
     event.preventDefault();
 
     this.isResizing = true;
-    document.body.onmousemove = this.mOnResizing;
-    document.body.onmouseup = this.mOnResizeEnd;
+    document.body.onmousemove = this.mOnResizing.bind(this);
+    document.body.onmouseup = this.mOnResizeEnd.bind(this);
 
     if (this.onResizeStart) {
       const sides: Sides[] = [];
@@ -551,9 +553,9 @@ export default abstract class OSApp
       if (this.westResize) sides.push("west");
       this.onResizeStart(event, sides);
     }
-  };
+  }
 
-  protected mOnResizing = (event: MouseEvent) => {
+  protected mOnResizing(event: MouseEvent) {
     event.stopPropagation();
     event.preventDefault();
 
@@ -565,9 +567,9 @@ export default abstract class OSApp
       if (this.westResize) sides.push("west");
       this.onResizing(event, sides);
     }
-  };
+  }
 
-  protected mOnResizeEnd = (event: MouseEvent) => {
+  protected mOnResizeEnd(event: MouseEvent) {
     event.stopPropagation();
     event.preventDefault();
 
@@ -589,7 +591,7 @@ export default abstract class OSApp
     this.eastResize = false;
     this.westResize = false;
     this.mResizeUpdateCursor();
-  };
+  }
 
   private mResizeUpdateCursor = () => {
     if (this.isDragging) return;
