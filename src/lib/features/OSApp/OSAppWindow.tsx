@@ -60,6 +60,14 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
 
   const prevMouseRef = useRef({ x: 0, y: 0 });
   const windowRef = useRef<HTMLDivElement>(null);
+  const startRef = useRef({
+    mouseX: 0,
+    mouseY: 0,
+    x: 0,
+    y: 0,
+    w: 0,
+    h: 0,
+  });
 
   const pinnedApps = useAppSelector((state) => state.taskbar.pinnedTaskbarApps);
   const openApps = useAppSelector((state) => state.taskbar.openedTaskbarApps);
@@ -220,75 +228,61 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
       setStartOpacity(0);
       setTimeout(() => dispatch(closeApp(app.getAppProps().appFile.id)), 300);
     });
-    instance.setOnResizeStart(() => {
+
+    instance.setOnResizeStart((e: React.MouseEvent) => {
+      startRef.current = {
+        mouseX: e.clientX,
+        mouseY: e.clientY,
+        x: position.x,
+        y: position.y,
+        w: width,
+        h: height,
+      };
       setIsResizing(true);
     });
-    instance.setOnResizing((event, sides) => {
-      const updateNorth = () => {
-        const deltaY = position.y - event.clientY;
-        setHeight((prev) => {
-          const newHeight = prev + deltaY;
-          return Math.max(newHeight, app.minimumHeight);
-        });
-        if (height + deltaY > app.minimumHeight) {
-          setPosition((prev) => {
-            return { x: prev.x, y: prev.y - deltaY };
-          });
-        }
-      };
 
-      const updateSouth = () => {
-        setHeight((prev) => {
-          const newHeight = prev + (event.clientY - (position.y + height));
-          return Math.max(newHeight, app.minimumHeight);
-        });
-      };
+    instance.setOnResizing((e: MouseEvent, sides: string[]) => {
+      const s = startRef.current;
+      const dx = e.clientX - s.mouseX;
+      const dy = e.clientY - s.mouseY;
 
-      const updateEast = () => {
-        setWidth((prev) => {
-          const newWidth = prev + (event.clientX - (position.x + width));
-          return Math.max(newWidth, app.minimumWidth);
-        });
-      };
+      // propose box from start + total delta
+      let x = s.x,
+        y = s.y,
+        w = s.w,
+        h = s.h;
 
-      const updateWest = () => {
-        const deltaX = position.x - event.clientX;
-        setWidth((prev) => {
-          const newWidth = prev + deltaX;
-          return Math.max(newWidth, app.minimumWidth);
-        });
-        if (width + deltaX > app.minimumWidth) {
-          setPosition((prev) => {
-            return { x: prev.x - deltaX, y: prev.y };
-          });
-        }
-      };
-
-      if (sides.includes("north") && sides.includes("east")) {
-        updateNorth();
-        updateEast();
-      } else if (sides.includes("north") && sides.includes("west")) {
-        updateNorth();
-        updateWest();
-      } else if (sides.includes("south") && sides.includes("east")) {
-        updateSouth();
-        updateEast();
-      } else if (sides.includes("south") && sides.includes("west")) {
-        updateSouth();
-        updateWest();
-      } else if (sides.includes("north")) {
-        updateNorth();
-      } else if (sides.includes("south")) {
-        updateSouth();
-      } else if (sides.includes("east")) {
-        updateEast();
-      } else if (sides.includes("west")) {
-        updateWest();
+      if (sides.includes("east")) w = s.w + dx;
+      if (sides.includes("south")) h = s.h + dy;
+      if (sides.includes("west")) {
+        x = s.x + dx;
+        w = s.w - dx;
       }
+      if (sides.includes("north")) {
+        y = s.y + dy;
+        h = s.h - dy;
+      }
+
+      // clamp and re-anchor edges so the opposite edge stays fixed
+      const minW = app.minimumWidth;
+      const minH = app.minimumHeight;
+
+      if (w < minW) {
+        if (sides.includes("west")) x = s.x + (s.w - minW); // lock east edge
+        w = minW;
+      }
+      if (h < minH) {
+        if (sides.includes("north")) y = s.y + (s.h - minH); // lock south edge
+        h = minH;
+      }
+
+      // commit
+      setPosition({ x, y });
+      setWidth(w);
+      setHeight(h);
     });
-    instance.setOnResizeEnd(() => {
-      setIsResizing(false);
-    });
+
+    instance.setOnResizeEnd(() => setIsResizing(false));
   }, [
     app,
     dispatch,

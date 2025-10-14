@@ -5,10 +5,6 @@ import { OSFileSystem } from "../files/OSFileSystem";
 import { File } from "../files/FilesItem";
 
 export default class CodeEditor extends OSApp {
-  state: { resizeCallback: ((event: MouseEvent) => void) | null } = {
-    resizeCallback: null,
-  };
-
   constructor(props?: OSAppProps) {
     super(props);
 

@@ -58,11 +58,8 @@ export class OSFileSystem {
   }
 
   public static createFolderFrom(folder: Folder): Folder | null {
-    const [path] = OSFileSystem.folderFullPathToPathAndName(folder.path);
-    const parent = OSFileSystem.getFolder(path);
+    const parent = this.getParent(folder);
     if (parent) {
-      parent.items.push(folder);
-      OSFileSystem.updateFolder(parent);
       OSFileSystem.updateFolder(folder);
       return folder;
     }
@@ -93,6 +90,13 @@ export class OSFileSystem {
     if (!path.endsWith("/")) path += "/";
     localStorage.setItem(path, JSON.stringify(folder));
     this.updateFileSystem();
+    const parent = this.getParent(folder);
+    if (parent) {
+      const i = parent.items.findIndex((item) => item.id === folder.id);
+      if (i === -1) parent.items.push(folder);
+      else parent.items[i] = folder;
+      this.updateFolder(parent);
+    }
   }
 
   public static getFile(fullPath: string): File | null {
@@ -254,6 +258,12 @@ export class OSFileSystem {
       name.includes(">") ||
       name.includes("|")
     );
+  }
+
+  public static getParent(folder: Folder): Folder | null {
+    if (folder.path === "/") return null;
+    const [path] = OSFileSystem.folderFullPathToPathAndName(folder.path);
+    return OSFileSystem.getFolder(path);
   }
 
   private static recursiveMove(item: FilesItem, path: string): boolean {

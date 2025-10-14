@@ -2,7 +2,7 @@ import Editor, { Monaco } from "@monaco-editor/react";
 import { editor } from "monaco-editor";
 import { ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import { OSFileSystem } from "../files/OSFileSystem";
-import { File } from "../files/FilesItem";
+import { File, Folder } from "../files/FilesItem";
 import { useAppDispatch, useIsAppShowing } from "@/lib/hooks";
 import OSApp from "@/lib/features/OSApp/OSApp";
 import { addApp, updateApp } from "@/lib/OSApps/AppList";
@@ -13,6 +13,7 @@ import {
 } from "@/lib/features/windowManager/windowManagerSlice";
 import { makeClassFromTsx } from "@/lib/runtimeCompiler";
 import { FaPlay } from "react-icons/fa";
+import { IoIosArrowForward } from "react-icons/io";
 
 interface EditorComponentProps {
   args: string[];
@@ -33,14 +34,28 @@ export default function EditorComponent(props: EditorComponentProps) {
     return new File("temp", "/", ".txt");
   }, [props.args]);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [file, setFile] = useState(getFileFromArgs());
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [folder, setFolder] = useState(
+    OSFileSystem.getFolder(
+      getFileFromArgs().path.substring(
+        0,
+        getFileFromArgs().path.lastIndexOf("/"),
+      ),
+    ),
+  );
   const [value, setValue] = useState(file.value);
   const [instance, setInstance] = useState<OSApp | null>(null);
 
   useEffect(() => {
-    if (file) OSFileSystem.updateFileValue(file, value);
-  }, [file, value]);
+    setValue(file.value);
+    editorRef.current?.setScrollPosition({ scrollLeft: 0, scrollTop: 0 });
+  }, [file]);
+
+  useEffect(() => {
+    OSFileSystem.updateFileValue(file, value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
 
   const dispatch = useAppDispatch();
   const isAppShowing = useIsAppShowing(instance);
@@ -57,17 +72,21 @@ export default function EditorComponent(props: EditorComponentProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instance, dispatch]);
 
-  const { addHeaderTrailingItem, removeHeaderTrailingItem, args } = props;
+  const { addHeaderTrailingItem, removeHeaderTrailingItem } = props;
   useEffect(() => {
     const button = (
-      <StartButton instance={instance} setInstance={setInstance} args={args} />
+      <StartButton
+        instance={instance}
+        setInstance={setInstance}
+        value={value}
+      />
     );
     if (file.extension === ".osapp") addHeaderTrailingItem(button);
 
     return () => removeHeaderTrailingItem(button);
   }, [
     addHeaderTrailingItem,
-    args,
+    value,
     file.extension,
     instance,
     removeHeaderTrailingItem,
@@ -94,7 +113,6 @@ export default function EditorComponent(props: EditorComponentProps) {
       typeRoots: ["file:///node_modules/@types"],
       checkJs: false,
     });
-
     // Disable JS diagnostics so they don't flag TS syntax
     monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
       noSemanticValidation: true,
@@ -200,13 +218,19 @@ declare module "runnit/OSApp" {
   const handleMount = (editor: editor.IStandaloneCodeEditor) => {
     editor.getModel()!.updateOptions({
       tabSize: 2,
+      trimAutoWhitespace: true,
+      indentSize: "tabSize",
+      bracketColorizationOptions: {
+        enabled: true,
+        independentColorPoolPerBracketType: true,
+      },
+      insertSpaces: false,
     });
-    editorRef.current = editor;
   };
 
   return (
     <div
-      className="w-full h-full flex flex-col"
+      className="w-full h-full flex flex-row"
       onKeyDown={async (e) => {
         if (e.ctrlKey && e.key === "s") {
           e.preventDefault();
@@ -223,51 +247,49 @@ declare module "runnit/OSApp" {
         }
       }}
     >
-      <Editor
-        width="100%"
-        height="100%"
-        value={value}
-        onChange={(v) => setValue(v ?? "")}
-        theme="vs-dark"
-        language="typescript"
-        /** This is the important bit: give the model a .tsx URI */
-        path="file:///virtual/dynamic-app.tsx"
-        beforeMount={handleBeforeMount}
-        onMount={handleMount}
-        options={{ autoIndent: "full", automaticLayout: true }}
-      />
+      <div className="w-55 h-full bg-black/70 backdrop-blur-3xl shrink-0 border-r border-gray-500/60">
+        {folder && <FileExplorer setFile={setFile} folder={folder} />}
+      </div>
+      <div className="w-full h-full flex flex-col">
+        <div className="h-10 w-full bg-black/90 backdrop-blur-3xl shrink-0"></div>
+        <div className="bg-black w-full h-full">
+          <Editor
+            value={value}
+            width="100%"
+            height="100%"
+            onChange={(v) => setValue(v ?? "")}
+            theme="vs-dark"
+            language="typescript"
+            path="file:///virtual/dynamic-app.tsx"
+            beforeMount={handleBeforeMount}
+            onMount={handleMount}
+            options={{ autoIndent: "full", automaticLayout: true }}
+          />
+        </div>
+      </div>
     </div>
   );
 }
 
 const StartButton = ({
-  args,
+  value,
   instance,
   setInstance,
 }: {
-  args: string[];
+  value: string;
   instance: OSApp | null;
   setInstance: (app: OSApp | null) => void;
 }) => {
-  const getFileFromArgs = (args: string[]) => {
-    const fileArgIndex = args.indexOf("--file");
-    if (fileArgIndex >= 0) {
-      const filePath = args[fileArgIndex + 1];
-      return OSFileSystem.getFile(filePath) ?? new File("temp", "/", ".txt");
-    }
-    return new File("temp", "/", ".txt");
-  };
-
   return (
     <div className="flex flex-row justify-center items-center h-full">
       <button
         className="flex justify-center items-center hover:bg-[#00C000] text-[#00C000] hover:text-white cursor-pointer p-1.5 rounded-md"
         onClick={async () => {
           if (instance === null) {
-            const NewApp = await makeClassFromTsx(getFileFromArgs(args).value);
+            const NewApp = await makeClassFromTsx(value);
             setInstance(new NewApp());
           } else {
-            const NewApp = await makeClassFromTsx(getFileFromArgs(args).value);
+            const NewApp = await makeClassFromTsx(value);
             const newInstance = new NewApp() as OSApp;
             const newAppFile = {
               ...newInstance.appFile,
@@ -281,6 +303,95 @@ const StartButton = ({
         <FaPlay />
       </button>
       <div className="bg-gray-500 h-[70%] w-[1px] mx-2" />
+    </div>
+  );
+};
+
+const FileExplorer = ({
+  folder,
+  setFile,
+}: {
+  folder: Folder;
+  setFile: (file: File) => void;
+}) => {
+  folder.items = folder.items.sort((item1, item2) => {
+    if ("items" in item1 && !("items" in item2)) {
+      return -1;
+    } else if (!("items" in item1) && "items" in item2) {
+      return 1;
+    } else {
+      const len = Math.min(item1.name.length, item2.name.length);
+      for (let i = 0; i < len; i++) {
+        if (item1.name.charCodeAt(i) < item2.name.charCodeAt(i)) return -1;
+        else if (item1.name.charCodeAt(i) > item2.name.charCodeAt(i)) return 1;
+      }
+      if (item1.name.length < item2.name.length) return -1;
+      else if (item1.name.length > item2.name.length) return 1;
+    }
+    return 0;
+  });
+
+  return <FolderView setFile={setFile} folder={folder} />;
+};
+
+const FileView = ({
+  file,
+  setFile,
+}: {
+  file: File;
+  setFile: (file: File) => void;
+}) => {
+  return (
+    <p
+      className="p-3 border-b border-gray-500/60 text-sm"
+      onClick={() => setFile(file)}
+    >
+      {file.name + file.extension}
+    </p>
+  );
+};
+
+const FolderView = ({
+  folder,
+  setFile,
+}: {
+  folder: Folder;
+  setFile: (file: File) => void;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div
+      className={`flex flex-col ${!isOpen && "border-b"} border-gray-500/60`}
+    >
+      <div
+        onClick={() => setIsOpen((p) => !p)}
+        className="flex flex-row items-center p-2"
+      >
+        <IoIosArrowForward
+          className={`${isOpen ? "rotate-90" : "rotate-0"} transition-all`}
+        />
+        <p className="text-sm p-1"> {folder.name}</p>
+      </div>
+      {isOpen && (
+        <div className="pl-3">
+          {folder.items.map((item) => {
+            if ("extension" in item) {
+              return (
+                <FileView key={item.id} file={item as File} setFile={setFile} />
+              );
+            } else {
+              return (
+                <FolderView
+                  key={item.id}
+                  folder={item as Folder}
+                  setFile={setFile}
+                />
+              );
+            }
+          })}
+        </div>
+      )}
     </div>
   );
 };
