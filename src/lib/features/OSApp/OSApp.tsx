@@ -14,6 +14,7 @@ import { FiMaximize, FiMinimize } from "react-icons/fi";
 import { IoIosArrowDown } from "react-icons/io";
 import Image from "next/image";
 import appRegistry from "@/lib/OSApps/AppRegistry";
+import { mapStack } from "@/lib/runtimeCompiler";
 
 // OSApp.tsx: Base class for all OS-style applications, handling window control hooks and metadata
 export interface OSAppInterface {
@@ -26,6 +27,8 @@ export interface OSAppInterface {
 
 export interface OSAppProps {
   args?: string[];
+  isDev?: boolean;
+  devMessage?: string;
 }
 
 type Sides = "north" | "south" | "east" | "west";
@@ -48,6 +51,7 @@ export default abstract class OSApp
   public width = -1;
   public height = -1;
   public isDev = false;
+  public devMessage = "";
   protected headerTitle: string;
   private readonly headerHeight: number;
   // Variables
@@ -77,6 +81,8 @@ export default abstract class OSApp
     super(props ?? {});
 
     this.headerTitle = "";
+    this.isDev = props?.isDev ?? false;
+    this.devMessage = props?.devMessage ?? "";
 
     let id = appRegistry.apps.findIndex(
       (app) => app.app.constructor === this.constructor,
@@ -146,9 +152,10 @@ export default abstract class OSApp
     this.onResizeEnd = callback;
   };
 
-  setMaximize = (maximize: boolean) => {
-    if (this.onMaximize && this.isMaximized !== maximize) {
-      this.onMaximize();
+  public setMaximize = (maximize: boolean) => {
+    if (this.isMaximized !== maximize) {
+      this.isMaximized = maximize;
+      this.mOnMaximize();
     }
   };
 
@@ -167,7 +174,6 @@ export default abstract class OSApp
       >
         <div
           draggable
-          // onContextMenu={onContextMenu}
           onDragStart={this.mOnGrabStart.bind(this)}
           onDoubleClick={() => {
             this.setMaximize(!this.isMaximized);
@@ -446,23 +452,31 @@ export default abstract class OSApp
           }}
         />
         {this.header()}
-        <div className="h-full w-full overflow-hidden">
-          {(() => {
-            try {
-              return this.body();
-            } catch (e) {
-              const error = e as Error;
-              return (
-                <div className="bg-black h-full w-full text-white flex flex-col justify-center items-center gap-4">
-                  <p className="text-3xl justify-self-start">
-                    Error rendering window!
-                  </p>
-                  <p className="text-lg">{error.message}</p>
-                </div>
-              );
-            }
-          })()}
-        </div>
+        {!(this.isDev && this.devMessage.length > 0) ? (
+          <div className="h-full w-full overflow-hidden">
+            {(() => {
+              try {
+                return this.body();
+              } catch (e) {
+                const error = e as Error;
+                return (
+                  <div className="bg-black h-full w-full text-white flex flex-col justify-center items-center gap-4">
+                    <p className="text-3xl justify-self-start">
+                      Error rendering window!
+                    </p>
+                    <p className="text-lg">{error.stack}</p>
+                  </div>
+                );
+              }
+            })()}
+          </div>
+        ) : (
+          <div className="bg-black w-full h-full flex justify-center items-center">
+            <pre className="text-white text-xl">
+              {mapStack(this.devMessage)}
+            </pre>
+          </div>
+        )}
       </div>
     );
   }
@@ -494,6 +508,10 @@ export default abstract class OSApp
 
     this.headerTitle = this.appFile.name;
   };
+
+  protected mOnMaximize() {
+    if (this.onMaximize) this.onMaximize();
+  }
 
   protected addHeaderTrailingItem = (headerItem: ReactElement) => {
     this.headerTrailingItems.push(headerItem);

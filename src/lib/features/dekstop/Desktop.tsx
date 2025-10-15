@@ -250,28 +250,33 @@ export default function Desktop() {
     setColumnHeight(desktopHeight / (iconScale + 50) - 1);
   }, [iconScale, taskbarHeight, fullscreen]);
 
-  const showApp = useCallback((id: number, args?: string[]) => {
-    const app = appRegistry.getClass(id);
-    if (app) {
-      const position =
-        getSetting("windowPrefs" + app.getAppProps().appFile.id)?.position ??
-        undefined;
-      const height =
-        getSetting("windowPrefs" + app.getAppProps().appFile.id)?.height ??
-        undefined;
-      const width =
-        getSetting("windowPrefs" + app.getAppProps().appFile.id)?.width ??
-        undefined;
-      const props: AppWindowProps = {
-        x: position?.x ?? undefined,
-        y: position?.y ?? undefined,
-        height: height,
-        width: width,
-      };
-      app.args = args ?? [];
-      return <OSAppWindow props={props} key={id + 0.1} app={app} />;
-    }
-  }, []);
+  const showApp = useCallback(
+    (id: number, isDev: boolean, devMessage: string, args?: string[]) => {
+      const app = appRegistry.getClass(id);
+      if (app) {
+        const position =
+          getSetting("windowPrefs" + app.getAppProps().appFile.id)?.position ??
+          undefined;
+        const height =
+          getSetting("windowPrefs" + app.getAppProps().appFile.id)?.height ??
+          undefined;
+        const width =
+          getSetting("windowPrefs" + app.getAppProps().appFile.id)?.width ??
+          undefined;
+        const props: AppWindowProps = {
+          x: position?.x ?? undefined,
+          y: position?.y ?? undefined,
+          height: height,
+          width: width,
+        };
+        app.args = args ?? [];
+        app.isDev = isDev;
+        app.devMessage = devMessage;
+        return <OSAppWindow props={props} key={id + 0.1} app={app} />;
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     OSFileSystem.init();
@@ -451,7 +456,9 @@ export default function Desktop() {
         </motion.div>
       )}
       <AppLauncher />
-      {openApps.map((app) => showApp(app.pid, app.args))}
+      {openApps.map((app) =>
+        showApp(app.pid, app.isDev, app.devMessage, app.args),
+      )}
       <div
         className={`absolute bg-white/30 backdrop-blur-2xl border-white border-2 z-999 transition-all duration-500 pointer-events-none ${cursorY.current >= 11 ? "rounded-2xl inset-5" : "rounded-md inset-1"}`}
         style={{ opacity: shouldIndicateFullscreen ? "100%" : "0%" }}

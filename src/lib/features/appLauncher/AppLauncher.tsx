@@ -49,6 +49,12 @@ export default function AppLauncher() {
           registeredApps = registeredApps.filter(
             (app) => !getAppFromId(app.id)?.isDev,
           );
+          const temp = registeredApps;
+          registeredApps = [];
+          for (const app of temp) {
+            if (!registeredApps.some((cApp) => cApp.id === app.id))
+              registeredApps.push(app);
+          }
           if (registeredApps.length !== queryApps.length)
             setQueryApps(registeredApps);
         }
@@ -61,12 +67,21 @@ export default function AppLauncher() {
 
   useEffect(() => {
     let registeredApps = appRegistry.apps.flatMap((app) => app.app.appFile);
+    registeredApps = registeredApps.filter(
+      (app) => !getAppFromId(app.id)?.isDev,
+    );
     if (query.length !== 0) {
       registeredApps = registeredApps.filter(
         (app) =>
           app.name.toLowerCase().includes(query.toLowerCase()) ||
           query.toLowerCase().includes(app.name.toLowerCase()),
       );
+    }
+    const temp = registeredApps;
+    registeredApps = [];
+    for (const app of temp) {
+      if (!registeredApps.some((cApp) => cApp.id === app.id))
+        registeredApps.push(app);
     }
     setQueryApps(registeredApps);
   }, [query]);
@@ -131,31 +146,33 @@ export default function AppLauncher() {
           />
         </div>
         <div className="flex flex-row flex-11 w-full justify-center items-start mt-10 gap-2 flex-wrap overflow-y-scroll no-scrollbar">
-          {queryApps.map((app, i) => (
-            <OSAppFile
-              key={app.id}
-              isActive={i === activeIndex}
-              width={50}
-              textColor="black"
-              props={app}
-              onMenu={() => {
-                const shortcut = desktopItems
-                  .filter((item) => "appProps" in item)
-                  .find(
-                    (cApp) => (cApp as AppShortcut).appProps.id === app.id,
-                  ) as AppShortcut | undefined;
-                if (!shortcut)
-                  OSFileSystem.createFile(
-                    new AppShortcut(app, "/home/desktop/" + app.name),
-                  );
-                else OSFileSystem.deleteFile(shortcut);
-              }}
-              onClick={() => {
-                dispatch(toggleAppLauncher());
-                dispatch(launchApp({ id: app.id }));
-              }}
-            />
-          ))}
+          {queryApps.map((app, i) => {
+            return (
+              <OSAppFile
+                key={app.id}
+                isActive={i === activeIndex}
+                width={50}
+                textColor="black"
+                props={app}
+                onMenu={() => {
+                  const shortcut = desktopItems
+                    .filter((item) => "appProps" in item)
+                    .find(
+                      (cApp) => (cApp as AppShortcut).appProps.id === app.id,
+                    ) as AppShortcut | undefined;
+                  if (!shortcut)
+                    OSFileSystem.createFile(
+                      new AppShortcut(app, "/home/desktop/" + app.name),
+                    );
+                  else OSFileSystem.deleteFile(shortcut);
+                }}
+                onClick={() => {
+                  dispatch(toggleAppLauncher());
+                  dispatch(launchApp({ id: app.id }));
+                }}
+              />
+            );
+          })}
         </div>
       </div>
     </div>

@@ -9,6 +9,8 @@ export interface appInstance {
   isFocused: boolean;
   zIndex: number;
   args: string[];
+  isDev: boolean;
+  devMessage: string;
 }
 
 export interface windowManagerState {
@@ -34,7 +36,12 @@ export const windowManagerSlice = createSlice({
     // Launch or focus an app window; increments z-index and handles restore
     launchApp: (
       state,
-      action: PayloadAction<{ id: number; args?: string[] }>,
+      action: PayloadAction<{
+        id: number;
+        args?: string[];
+        isDev?: boolean;
+        devMessage?: string;
+      }>,
     ) => {
       state.lastUnfocusedApp = -1;
       state.focusZIndex++;
@@ -53,23 +60,47 @@ export const windowManagerSlice = createSlice({
           isFocused: true,
           zIndex: state.focusZIndex,
           args: action.payload.args ?? [],
+          isDev: action.payload.isDev ?? false,
+          devMessage: action.payload.devMessage ?? "",
         });
     },
     launchAppSilent: (
       state,
-      action: PayloadAction<{ id: number; args?: string[] }>,
+      action: PayloadAction<{
+        id: number;
+        args?: string[];
+        isDev?: boolean;
+        devMessage?: string;
+        isMinimized?: boolean;
+      }>,
     ) => {
-      const app = state.openApps.find((app) => app.pid === action.payload.id);
-      if (!app) {
+      const i = state.openApps.findIndex(
+        (app) => app.pid === action.payload.id,
+      );
+      if (i < 0) {
         state.openApps.push({
           pid: action.payload.id,
-          isMinimized: true,
+          isMinimized: action.payload.isMinimized ?? true,
           isMaximized:
             getSetting("windowPrefs" + action.payload.id)?.isMaximized ?? false,
           isFocused: false,
           zIndex: 1000,
           args: action.payload.args ?? [],
+          isDev: action.payload.isDev ?? false,
+          devMessage: action.payload.devMessage ?? "",
         });
+      } else {
+        state.openApps[i] = {
+          pid: action.payload.id,
+          isMinimized: action.payload.isMinimized ?? true,
+          isMaximized:
+            getSetting("windowPrefs" + action.payload.id)?.isMaximized ?? false,
+          isFocused: false,
+          zIndex: 1000,
+          args: action.payload.args ?? [],
+          isDev: action.payload.isDev ?? false,
+          devMessage: action.payload.devMessage ?? "",
+        };
       }
     },
     // Close window and adjust z-index for remaining windows
@@ -161,8 +192,8 @@ export const windowManagerSlice = createSlice({
     updateWindowRender: (state, action: PayloadAction<number>) => {
       const app = state.openApps.find((app) => app.pid === action.payload);
       if (app) {
-        app.isFocused = true;
-        app.isFocused = false;
+        app.isFocused = !app.isFocused;
+        app.isFocused = !app.isFocused;
       }
     },
     toggleAppLauncher: (state) => {

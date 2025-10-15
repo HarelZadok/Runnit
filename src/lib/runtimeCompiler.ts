@@ -105,12 +105,12 @@ function runtimeResolver(): esbuild.Plugin {
 // ─────────────────────────────────────────────
 // Compile and bundle dynamically to ESM
 // ─────────────────────────────────────────────
-async function compileDynamicTsxToEsm(tsxSource: string) {
+async function compileDynamicTsxToEsm(filepath: string, tsxSource: string) {
   await ensureEsbuild();
   const result = await esbuild.build({
     stdin: {
       contents: tsxSource,
-      sourcefile: "/dynamic-app.tsx",
+      sourcefile: filepath,
       loader: "tsx",
       resolveDir: "/",
     },
@@ -125,7 +125,12 @@ async function compileDynamicTsxToEsm(tsxSource: string) {
     sourcemap: "inline",
     minify: false,
   });
-  return result.outputFiles[0].text;
+  const code = result.outputFiles[0].text;
+  const m = code.match(
+    /sourceMappingURL=data:application\/json;base64,([A-Za-z0-9+/=]+)/,
+  );
+  const map = m ? JSON.parse(atob(m[1])) : null;
+  return { code, map };
 }
 
 // ─────────────────────────────────────────────
@@ -152,11 +157,28 @@ export async function importBlobModule(
   }
 }
 
-// ─────────────────────────────────────────────
-// High-level helper
-// ─────────────────────────────────────────────
-export async function makeClassFromTsx(source: string) {
-  const bundled = await compileDynamicTsxToEsm(source);
-  const mod = await importBlobModule(bundled, { OSApp, React, JSXRT });
+const sourceMapRegistry = new Map<string, any>();
+
+export async function makeClassFromTsx(filepath: string, source: string) {
+  const { code, map } = await compileDynamicTsxToEsm(filepath, source);
+  if (map) sourceMapRegistry.set(filepath, map);
+  const named = `${code}\n//# sourceURL=${filepath}`;
+  const mod = await importBlobModule(named, { OSApp, React, JSXRT });
   return mod.default ?? mod.ExampleApp ?? mod;
+}
+
+// util
+import { TraceMap, originalPositionFor } from "@jridgewell/trace-mapping";
+
+export function mapStack(stack: string) {
+  // matches: "at fn (/<path>:line:col)" and "at /<path>:line:col"
+  const re = /(at\s+[^(]*\()?(\/[^):\n]+):(\d+):(\d+)\)?/g;
+  return stack.replace(re, (m, pre = "", src, line, col) => {
+    const raw = sourceMapRegistry.get(src);
+    if (!raw) return m;
+    const tm = new TraceMap(raw);
+    const pos = originalPositionFor(tm, { line: +line, column: +col });
+    if (!pos.source || !pos.line) return m;
+    return `${pre}${pos.source}:${pos.line}:${pos.column ?? 0}`;
+  });
 }

@@ -91,11 +91,11 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
     iconWidth * (taskbarIconIndex + 2) -
     iconWidth / 2;
 
-  const appRef = useRef<OSApp>(null);
   const AppComponent = app.constructor as React.ComponentClass<
     OSAppProps,
     object
   >;
+  const appRef = useRef<OSApp>(null);
 
   const hasTriggeredHideRef = useRef(false);
 
@@ -162,7 +162,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
     const instance = appRef.current;
     if (!instance) return;
 
-    instance.isMaximized = maximized;
+    instance.setMaximize(maximized);
     instance.width = width;
     instance.height = height;
 
@@ -172,7 +172,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
       const leftOffset = e.clientX / window.innerWidth;
       setPrevPos({ x: position.x, y: position.y });
       if (maximized) {
-        instance.isMaximized = false;
+        instance.setMaximize(false);
         dispatch(unmaximizeApp(app.getAppProps().appFile.id));
         setPosition({
           x: e.clientX - width * leftOffset,
@@ -182,6 +182,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
       document.body.style.cursor = "move";
       prevMouseRef.current = { x: e.clientX, y: e.clientY };
     });
+
     // Dragging: update position incrementally
     instance.setOnGrabbing((e) => {
       const deltaX = e.clientX - prevMouseRef.current.x;
@@ -199,6 +200,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
         dispatch(unindicateFullscreen());
       }
     });
+
     // Drag end: stop grabbing
     instance.setOnGrabEnd((e) => {
       dispatch(unindicateFullscreen());
@@ -206,7 +208,7 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
       document.body.style.cursor = "auto";
       if (e.clientY <= 10 && e.clientY >= 0) {
         setPosition(prevPos!);
-        instance.isMaximized = true;
+        instance.setMaximize(true);
         dispatch(maximizeApp(app.getAppProps().appFile.id));
       }
       setPrevPos(null);
@@ -214,15 +216,17 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
 
     // Maximize toggle
     instance.setOnMaximize(() => {
-      instance.isMaximized = !maximized;
+      instance.setMaximize(!maximized);
       if (!maximized) dispatch(maximizeApp(app.getAppProps().appFile.id));
       else dispatch(unmaximizeApp(app.getAppProps().appFile.id));
     });
+
     // Minimize toggle
     instance.setOnMinimize(() => {
       if (!minimized) dispatch(minimizeApp(app.getAppProps().appFile.id));
       else dispatch(unminimizeApp(app.getAppProps().appFile.id));
     });
+
     // Close window
     instance.setOnClose(() => {
       setStartOpacity(0);
@@ -349,7 +353,12 @@ export default function OSAppWindow({ props, app }: OSAppWindowProps) {
           onMouseEnter={() => setIsMouseOver(true)}
           onMouseLeave={() => setIsMouseOver(false)}
         >
-          <AppComponent args={app.args} ref={appRef} />
+          <AppComponent
+            args={app.args}
+            devMessage={app.devMessage}
+            isDev={app.isDev}
+            ref={appRef}
+          />
         </div>
       </div>
     </div>

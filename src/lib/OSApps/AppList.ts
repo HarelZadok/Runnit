@@ -27,7 +27,7 @@ const fetch = async () => {
     if (file.extension !== ".osapp" || !file.value) continue;
 
     try {
-      const NewApp = await makeClassFromTsx(file.value);
+      const NewApp = await makeClassFromTsx(file.path, file.value);
       const instance = new NewApp();
       apps.push(instance);
     } catch (err) {

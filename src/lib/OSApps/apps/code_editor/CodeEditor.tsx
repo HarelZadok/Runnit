@@ -3,8 +3,15 @@ import React from "react";
 import EditorComponent from "./EditorComponent";
 import { OSFileSystem } from "../files/OSFileSystem";
 import { File } from "../files/FilesItem";
+import { editor } from "monaco-editor";
 
 export default class CodeEditor extends OSApp {
+  state: {
+    editorRef: editor.IStandaloneCodeEditor | null;
+  } = {
+    editorRef: null,
+  };
+
   constructor(props?: OSAppProps) {
     super(props);
 
@@ -15,7 +22,7 @@ export default class CodeEditor extends OSApp {
 
     if (props && props.args) {
       const file = getFileFromArgs(props.args);
-      this.headerTitle += " - " + file.name + file.extension;
+      this.setFileTitle(file.name + file.extension);
     }
   }
 
@@ -24,8 +31,35 @@ export default class CodeEditor extends OSApp {
       args={this.args}
       addHeaderTrailingItem={this.addHeaderTrailingItem}
       removeHeaderTrailingItem={this.removeHeaderTrailingItem}
+      setEditor={this.setEditor}
+      setFileTitle={this.setFileTitle}
+      appFileId={this.appFile.id}
     />
   );
+
+  setFileTitle = (title: string) => {
+    this.headerTitle = "CodeEditor - " + title;
+  };
+
+  setEditor = (editorRef: editor.IStandaloneCodeEditor) => {
+    this.state.editorRef = editorRef;
+  };
+
+  protected mOnMaximize() {
+    super.mOnMaximize();
+
+    const editorRef = this.state.editorRef;
+    if (editorRef && !this.isMaximized) {
+      setTimeout(() => editorRef.layout({} as editor.IDimension), 300);
+    }
+  }
+
+  protected mOnResizing(event: MouseEvent) {
+    super.mOnResizing(event);
+
+    const editorRef = this.state.editorRef;
+    if (editorRef) editorRef.layout({} as editor.IDimension);
+  }
 }
 
 const getFileFromArgs = (args: string[]) => {
