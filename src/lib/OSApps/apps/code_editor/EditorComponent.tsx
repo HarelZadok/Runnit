@@ -22,7 +22,7 @@ import FileExplorer from "@/lib/OSApps/apps/code_editor/FileExplorer";
 import StartButton from "@/lib/OSApps/apps/code_editor/StartButton";
 import TabBar from "@/lib/OSApps/apps/code_editor/TabBar";
 import StatsBar from "@/lib/OSApps/apps/code_editor/StatsBar";
-import { AppError } from "@/lib/OSApps/apps/app_error/AppError";
+import { EmptyApp } from "@/lib/OSApps/apps/empty_app/EmptyApp";
 
 interface EditorComponentProps {
   args: string[];
@@ -106,10 +106,9 @@ export default function EditorComponent(props: EditorComponentProps) {
         } catch (e) {
           if (instance && isAppShowing) {
             const er = e as Error;
-            const newInstance = new AppError({
-              isDev: true,
-              devMessage: er.stack ?? er.name + ": " + er.message,
-            }) as OSApp;
+            const newInstance = new EmptyApp();
+            newInstance.isDev = true;
+            newInstance.devMessage = er.stack ?? er.name + ": " + er.message;
             const newAppFile = {
               ...newInstance.appFile,
               id: instance!.appFile.id,

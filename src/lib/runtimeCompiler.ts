@@ -3,6 +3,39 @@ import OSApp from "@/lib/features/OSApp/OSApp";
 import React from "react";
 import * as JSXRT from "react/jsx-runtime";
 
+// Virtual file system helpers
+function resolvePath(base: string, relative: string): string {
+  if (relative.startsWith("/")) return relative;
+  if (relative.startsWith("http://") || relative.startsWith("https://"))
+    return relative;
+
+  const dir = base.substring(0, base.lastIndexOf("/"));
+  const parts = dir.split("/").filter(Boolean);
+  const relParts = relative.split("/");
+
+  for (const part of relParts) {
+    if (part === "..") parts.pop();
+    else if (part !== ".") parts.push(part);
+  }
+
+  return "/" + parts.join("/");
+}
+
+function tryResolveWithExtensions(path: string): string | null {
+  // Try exact match first
+  const file = OSFileSystem.getFile(path);
+  if (file) return path;
+
+  // Try with extensions
+  const extensions = [".tsx", ".ts", ".jsx", ".js"];
+  for (const ext of extensions) {
+    const withExt = path + ext;
+    if (OSFileSystem.getFile(withExt)) return withExt;
+  }
+
+  return null;
+}
+
 let esbuildReady: Promise<void> | null = null;
 function ensureEsbuild() {
   if (!esbuildReady) {
@@ -98,6 +131,40 @@ function runtimeResolver(): esbuild.Plugin {
                 : "js",
         };
       });
+
+      build.onResolve({ filter: /^\.\.?\/.*/ }, (args) => {
+        const resolved = resolvePath(args.importer, args.path);
+        const finalPath = tryResolveWithExtensions(resolved);
+
+        if (finalPath) {
+          return { path: finalPath, namespace: "osfs" };
+        }
+
+        return {
+          errors: [{ text: `File not found in OSFileSystem: ${resolved}` }],
+        };
+      });
+
+      // Load from OSFileSystem
+      build.onLoad({ filter: /.*/, namespace: "osfs" }, (args) => {
+        const file = OSFileSystem.getFile(args.path);
+
+        if (!file || !("value" in file)) {
+          return {
+            errors: [{ text: `File not found or not readable: ${args.path}` }],
+          };
+        }
+
+        const loader = args.path.endsWith(".tsx")
+          ? "tsx"
+          : args.path.endsWith(".ts")
+            ? "ts"
+            : args.path.endsWith(".jsx")
+              ? "jsx"
+              : "js";
+
+        return { contents: file.value, loader };
+      });
     },
   };
 }
@@ -169,6 +236,7 @@ export async function makeClassFromTsx(filepath: string, source: string) {
 
 // util
 import { TraceMap, originalPositionFor } from "@jridgewell/trace-mapping";
+import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
 
 export function mapStack(stack: string) {
   // matches: "at fn (/<path>:line:col)" and "at /<path>:line:col"

@@ -471,8 +471,8 @@ export default abstract class OSApp
             })()}
           </div>
         ) : (
-          <div className="bg-black w-full h-full flex justify-center items-center">
-            <pre className="text-white text-xl">
+          <div className="bg-black w-full h-full flex justify-center items-center overflow-y-scroll scrollbar scrollbar-corner-transparent scrollbar-track-transparent scrollbar-thumb-white scr">
+            <pre className="text-white whitespace-pre-wrap">
               {mapStack(this.devMessage)}
             </pre>
           </div>
