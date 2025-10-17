@@ -424,7 +424,7 @@ export default function Desktop() {
                   dispatch(clearActiveDesktopApps());
                   for (const fileId of activeFiles) {
                     const cFile = files.find((cApp) => cApp.id === fileId)!;
-                    if ("items" in cFile) {
+                    if (cFile.type === "folder") {
                       const id = getIdFromAppClass(Files);
                       dispatch(
                         launchApp({

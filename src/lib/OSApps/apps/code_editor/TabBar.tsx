@@ -25,11 +25,11 @@ export default function TabBar({
   };
 
   return (
-    <div className="h-10 w-full bg-black/90 backdrop-blur-3xl shrink-0 flex flex-row">
+    <div className="h-10 w-full bg-[#1e1e1e]/100 backdrop-blur-3xl shrink-0 flex flex-row border-b-2 border-gray-600">
       {openTabs.map((tab) => {
         return (
           <div
-            className={`h-full p-2 pr-1 flex flex-row justify-center items-center hover:bg-gray-500 ${activeFile?.id === tab.id && "border-b-2 border-blue-500"}`}
+            className={`h-full p-2 pr-1 flex flex-row justify-center items-center hover:bg-gray-500 ${activeFile?.id === tab.id && "border-b-4 border-blue-500"}`}
             key={tab.id}
             onClick={() => setActiveFile(tab)}
             onMouseDown={(e) => e.button === 1 && closeTab(tab)}

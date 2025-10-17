@@ -117,7 +117,7 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
 
   const openItem = useCallback(
     (item: FilesItem) => {
-      if ("items" in item) {
+      if (item.type === "folder") {
         props.onDirectory(item.path);
       } else {
         openFile(item);
@@ -185,9 +185,10 @@ export default function DirectoryDetailsPane(props: DirectoryDetailsPaneProps) {
               props={{
                 name:
                   item.name +
-                  ("extension" in item ? (item as File).extension : ""),
+                  (item.type === "file" ? (item as File).extension : ""),
                 icon: (item as File).icon,
                 id: item.id,
+                type: item.type,
               }}
               width={40}
               height={40}

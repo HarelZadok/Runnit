@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@babel/standalone": "^7.28.4",
+    "@codesandbox/sandpack-react": "^2.20.0",
     "@monaco-editor/react": "^4.7.0",
     "@reduxjs/toolkit": "^2.8.2",
     "ace-builds": "^1.43.2",

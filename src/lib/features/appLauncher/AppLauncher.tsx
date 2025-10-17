@@ -8,7 +8,10 @@ import {
 } from "@/lib/features/windowManager/windowManagerSlice";
 import appRegistry from "@/lib/OSApps/AppRegistry";
 import { OSAppFile, OSAppFileProps } from "@/lib/features/OSApp/OSAppFile";
-import FilesItem, { AppShortcut } from "@/lib/OSApps/apps/files/FilesItem";
+import FilesItem, {
+  AppShortcut,
+  File,
+} from "@/lib/OSApps/apps/files/FilesItem";
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
 import { getAppFromId } from "@/lib/OSApps/AppList";
 
@@ -156,13 +159,16 @@ export default function AppLauncher() {
                 props={app}
                 onMenu={() => {
                   const shortcut = desktopItems
-                    .filter((item) => "appProps" in item)
+                    .filter((item) => (item as File).extension === ".app")
                     .find(
                       (cApp) => (cApp as AppShortcut).appProps.id === app.id,
                     ) as AppShortcut | undefined;
                   if (!shortcut)
                     OSFileSystem.createFile(
-                      new AppShortcut(app, "/home/desktop/" + app.name),
+                      new AppShortcut(
+                        app,
+                        "/home/desktop/" + app.name + ".app",
+                      ),
                     );
                   else OSFileSystem.deleteFile(shortcut);
                 }}

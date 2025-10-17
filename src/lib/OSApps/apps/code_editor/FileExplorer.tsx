@@ -13,9 +13,9 @@ export default function FileExplorer({
   activeFile: File | null;
 }) {
   folder.items = folder.items.sort((item1, item2) => {
-    if ("items" in item1 && !("items" in item2)) {
+    if (item1.type === "folder" && item2.type === "file") {
       return -1;
-    } else if (!("items" in item1) && "items" in item2) {
+    } else if (item1.type === "file" && item2.type === "folder") {
       return 1;
     } else {
       const len = Math.min(item1.name.length, item2.name.length);
@@ -48,7 +48,7 @@ const FileView = ({
   return (
     <p
       className={`p-3 border-b border-gray-500/60 text-sm ${activeFile?.id === file.id ? "bg-blue-600" : "hover:bg-gray-500"}`}
-      onDoubleClick={() => setFile(file)}
+      onClick={() => setFile(file)}
     >
       {file.name + file.extension}
     </p>
@@ -92,7 +92,7 @@ const FolderView = ({
             className="pl-3 overflow-hidden"
           >
             {folder.items.map((item) => {
-              if ("extension" in item) {
+              if (item.type === "file") {
                 return (
                   <FileView
                     key={item.id}

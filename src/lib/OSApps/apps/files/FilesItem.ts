@@ -7,12 +7,19 @@ export default abstract class FilesItem {
   public path: string;
   public icon: string;
   public beforeTrashPath?: string;
+  public type: "file" | "folder";
 
-  protected constructor(name: string, path: string, icon: string) {
+  protected constructor(
+    name: string,
+    path: string,
+    icon: string,
+    type: "file" | "folder",
+  ) {
     this.id = OSFileSystem.generateFileId();
     this.name = name;
     this.path = path;
     this.icon = icon;
+    this.type = type;
   }
 }
 
@@ -29,7 +36,7 @@ export class File extends FilesItem {
     icon?: string,
     value?: string,
   ) {
-    super(name, path, icon ?? "/icons/file.png");
+    super(name, path, icon ?? "/icons/file.png", "file");
     this.size = 0;
     this.dateOfCreation = Date.now();
     this.extension = extension;
@@ -50,7 +57,7 @@ export class Folder extends FilesItem {
   public items: FilesItem[];
 
   constructor(name: string, path: string, icon?: string) {
-    super(name, path, icon ?? "/icons/files.png");
+    super(name, path, icon ?? "/icons/files.png", "folder");
     this.items = [];
   }
 }

@@ -13,11 +13,13 @@ import React, {
 import { Property } from "csstype";
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
 import TextDecorationColor = Property.TextDecorationColor;
+import { AppShortcut, File } from "@/lib/OSApps/apps/files/FilesItem";
 
 export interface OSAppFileProps {
   readonly id: number;
   name: string;
   icon: string;
+  type: "file" | "folder";
 }
 
 export interface AdvancedOSAppFileProps {
@@ -125,12 +127,6 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
       props.props.icon === "/icons/trash-full.png" ||
       props.props.icon === "/icons/trash-empty.png";
 
-    const name = (() => {
-      if ("extension" in props.props && props.props.extension !== ".app")
-        return props.props.name + props.props.extension;
-      return props.props.name;
-    })();
-
     return (
       <div style={{ zIndex: shouldRenderMenu ? 10 : 0 }}>
         {props.menu && shouldRenderMenu && (
@@ -154,7 +150,6 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
           onContextMenu={onMenu}
           ref={ref}
           data-id={props.props.id}
-          title={name}
           style={{
             height: iconScale + (props.height ?? 50),
             width: iconScale + (props.width ?? 10),
@@ -183,7 +178,7 @@ export const OSAppFile = forwardRef<HTMLDivElement, AdvancedOSAppFileProps>(
               overflowWrap: "anywhere",
             }}
             dangerouslySetInnerHTML={{
-              __html: name.replace(/\.([^.]+)$/, "<wbr>.$1"),
+              __html: props.props.name.replace(/\.([^.]+)$/, "<wbr>.$1"),
             }}
           />
         </div>

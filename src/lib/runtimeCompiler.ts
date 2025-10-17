@@ -54,11 +54,11 @@ function runtimeResolver(): esbuild.Plugin {
     name: "runtime-resolver",
     setup(build) {
       // OSApp virtual module
-      build.onResolve({ filter: /^runnit\/OSApp$/ }, () => ({
-        path: "runnit/OSApp",
+      build.onResolve({ filter: /^Runnit\/OSApp$/ }, () => ({
+        path: "Runnit/OSApp",
         namespace: "virtual",
       }));
-      build.onLoad({ filter: /^runnit\/OSApp$/, namespace: "virtual" }, () => ({
+      build.onLoad({ filter: /^Runnit\/OSApp$/, namespace: "virtual" }, () => ({
         contents: `
           export default globalThis.__dyn.OSApp;
           export const OSApp = globalThis.__dyn.OSApp;
@@ -149,7 +149,7 @@ function runtimeResolver(): esbuild.Plugin {
       build.onLoad({ filter: /.*/, namespace: "osfs" }, (args) => {
         const file = OSFileSystem.getFile(args.path);
 
-        if (!file || !("value" in file)) {
+        if (!file || file.type !== "file") {
           return {
             errors: [{ text: `File not found or not readable: ${args.path}` }],
           };

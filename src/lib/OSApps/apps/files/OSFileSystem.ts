@@ -104,7 +104,8 @@ export class OSFileSystem {
     const folder = OSFileSystem.getFolder(path);
     if (folder) {
       const index = folder.items.findIndex((item) => {
-        if ("extension" in item) return item.name + item.extension === name;
+        if (item.type === "file")
+          return item.name + (item as File).extension === name;
         return false;
       });
       if (index >= 0) return folder.items[index] as File;
@@ -160,8 +161,8 @@ export class OSFileSystem {
     )
       return;
 
-    if ("items" in item) return this.renameFolder(item as Folder, name);
-    else if ("extension" in item) return this.renameFile(item as File, name);
+    if (item.type === "folder") return this.renameFolder(item as Folder, name);
+    else if (item.type === "file") return this.renameFile(item as File, name);
   }
 
   public static deleteFile(file: File): boolean {
@@ -179,8 +180,9 @@ export class OSFileSystem {
   }
 
   public static deleteItem(item: FilesItem): boolean {
-    if ("items" in item) return OSFileSystem.deleteFolder(item as Folder);
-    else if ("extension" in item) return OSFileSystem.deleteFile(item as File);
+    if (item.type === "folder")
+      return OSFileSystem.deleteFolder(item as Folder);
+    else if (item.type === "file") return OSFileSystem.deleteFile(item as File);
 
     return false;
   }
@@ -269,7 +271,7 @@ export class OSFileSystem {
   private static recursiveMove(item: FilesItem, path: string): boolean {
     if (OSFileSystem.getFolder(path) === null) return false;
 
-    if ("extension" in item) {
+    if (item.type === "file") {
       if (OSFileSystem.deleteFile(item as File)) {
         const name = item.name + (item as File).extension;
 
@@ -278,7 +280,7 @@ export class OSFileSystem {
         return OSFileSystem.createFile(item as File) !== null;
       }
       return false;
-    } else if ("items" in item) {
+    } else if (item.type === "folder") {
       if (OSFileSystem.deleteFolder(item as Folder)) {
         if (!path.endsWith("/")) path += "/";
         item.path = path + item.name;
@@ -299,7 +301,7 @@ const createTemplateFile = () => {
       "/.apps/Template.osapp",
       ".osapp",
       undefined,
-      'import OSApp, { OSAppProps } from "runnit/OSApp";\n' +
+      'import OSApp, { OSAppProps } from "Runnit/OSApp";\n' +
         "import { useState, useEffect, ReactElement } from 'react'\n" +
         "\n" +
         "export default class Runnit extends OSApp {\n" +

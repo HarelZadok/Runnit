@@ -1,14 +1,15 @@
 import Editor, { Monaco } from "@monaco-editor/react";
-import { editor } from "monaco-editor";
+import { editor, IPosition, IRange, Uri } from "monaco-editor";
 import React, {
   ReactElement,
+  SetStateAction,
   useCallback,
   useEffect,
   useRef,
   useState,
 } from "react";
 import { OSFileSystem } from "../files/OSFileSystem";
-import { File } from "../files/FilesItem";
+import { File, Folder } from "../files/FilesItem";
 import { useAppDispatch, useIsAppShowing } from "@/lib/hooks";
 import OSApp from "@/lib/features/OSApp/OSApp";
 import { addApp, updateApp } from "@/lib/OSApps/AppList";
@@ -197,7 +198,7 @@ export default function EditorComponent(props: EditorComponentProps) {
                   : file.path
               }
               className="shrink-0"
-              beforeMount={handleBeforeMount}
+              beforeMount={(monaco) => handleBeforeMount(monaco, setFile)}
               onMount={handleMount}
               options={{ autoIndent: "full", automaticLayout: true }}
             />
@@ -224,7 +225,10 @@ const getFileFromArgs = (args: string[]) => {
 };
 
 // Configure TS *before* Editor creates the model.
-const handleBeforeMount = async (monaco: Monaco) => {
+const handleBeforeMount = async (
+  monaco: Monaco,
+  setFile: React.Dispatch<SetStateAction<File | null>>,
+) => {
   monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
 
   monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
@@ -293,7 +297,35 @@ const handleBeforeMount = async (monaco: Monaco) => {
     baseUrl: "file:///",
     paths: {
       ...(ts.typescriptDefaults.getCompilerOptions().paths || {}),
-      "runnit/OSApp": ["node_modules/@types/runnit/index.d.ts"],
+      "Runnit/OSApp": ["node_modules/@types/runnit/index.d.ts"],
+      react: ["file:///node_modules/@types/react/index.d.ts"],
+    },
+  });
+
+  monaco.editor.registerEditorOpener({
+    openCodeEditor(
+      source: editor.ICodeEditor,
+      resource: Uri,
+      selection?: IRange | IPosition,
+    ): boolean | Promise<boolean> {
+      let model = monaco.editor.getModel(resource);
+      const file = OSFileSystem.getFile(resource.path);
+      if (!model) {
+        const text = file?.value ?? "";
+        const lang = file?.extension;
+        model = monaco.editor.createModel(text, lang, resource);
+      }
+
+      if (file) {
+        setFile(file);
+        source.setModel(model);
+        if (selection) {
+          source.setSelection(selection as IRange);
+          source.revealRangeInCenter(selection as IRange);
+        }
+        return true;
+      }
+      return false;
     },
   });
 };
@@ -301,12 +333,11 @@ const handleBeforeMount = async (monaco: Monaco) => {
 function addRunnitLibrary(monaco: Monaco) {
   monaco.languages.typescript.typescriptDefaults.addExtraLib(
     `
-declare module "runnit/OSApp" {
-  // shape should mirror your class’s public surface
+declare module "Runnit/OSApp" {
   export interface OSAppFileProps { id?: number; name: string; icon: string }
   export interface OSAppProps { args?: string[] }
 
-  export default class OSApp extends import("react").Component<OSAppProps> {
+  export default class OSApp extends React.Component<OSAppProps> {
     static appCount: number;
     readonly defaultWidth: number;
     readonly defaultHeight: number;
@@ -320,33 +351,33 @@ declare module "runnit/OSApp" {
     height: number;
 
     constructor(props?: OSAppProps);
-    header(): import("react").ReactElement;
-    body(): import("react").ReactElement;
+    header(): React.ReactElement;
+    body(): React.ReactElement;
 
     setMaximize(maximize: boolean): void;
     setMinimize(minimize: boolean): void;
 
     getAppProps(): {
       appFile: OSAppFileProps;
-      header: () => import("react").ReactElement;
-      body: () => import("react").ReactElement;
+      header: () => React.ReactElement;
+      body: () => React.ReactElement;
       defaultWidth: number;
       defaultHeight: number;
     };
 
     protected setAppFile(input: { name?: string; icon?: string }): void;
-    protected addHeaderTrailingItem(item: import("react").ReactElement): void;
-    protected removeHeaderTrailingItem(item: import("react").ReactElement): void;
-    protected setHeaderTrailingItems(items: import("react").ReactElement[]): void;
-    protected mOnGrabStart(event: import("react").DragEvent<HTMLDivElement>): void;
+    protected addHeaderTrailingItem(item: React.ReactElement): void;
+    protected removeHeaderTrailingItem(item: React.ReactElement): void;
+    protected setHeaderTrailingItems(items: React.ReactElement[]): void;
+    protected mOnGrabStart(event: React.DragEvent<HTMLDivElement>): void;
     protected mOnGrabbing(event: MouseEvent): void;
     protected mOnGrabEnd(event: MouseEvent): void;
-    protected mOnResizeStart(event: import("react").MouseEvent): void;
+    protected mOnResizeStart(event: React.MouseEvent): void;
     protected mOnResizing(event: MouseEvent): void;
     protected mOnResizeEnd(event: MouseEvent): void;
   }
 }
 `,
-    "file:///node_modules/@types/runnit/index.d.ts",
+    "file:///node_modules/@types/runnit/osapp/index.d.ts",
   );
 }
