@@ -95,6 +95,7 @@ export default abstract class OSApp
       id: id,
       name: "",
       icon: "",
+      type: "file",
     };
 
     this.args = props?.args ?? [];
@@ -504,6 +505,7 @@ export default abstract class OSApp
       id: id ?? this.appFile.id,
       name: name ?? this.appFile.name,
       icon: icon ?? this.appFile.icon,
+      type: "file",
     };
 
     this.headerTitle = this.appFile.name;

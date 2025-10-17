@@ -13,7 +13,6 @@ import React, {
 import { Property } from "csstype";
 import { OSFileSystem } from "@/lib/OSApps/apps/files/OSFileSystem";
 import TextDecorationColor = Property.TextDecorationColor;
-import { AppShortcut, File } from "@/lib/OSApps/apps/files/FilesItem";
 
 export interface OSAppFileProps {
   readonly id: number;

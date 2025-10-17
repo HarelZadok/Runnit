@@ -9,7 +9,7 @@ import React, {
   useState,
 } from "react";
 import { OSFileSystem } from "../files/OSFileSystem";
-import { File, Folder } from "../files/FilesItem";
+import { File } from "../files/FilesItem";
 import { useAppDispatch, useIsAppShowing } from "@/lib/hooks";
 import OSApp from "@/lib/features/OSApp/OSApp";
 import { addApp, updateApp } from "@/lib/OSApps/AppList";
