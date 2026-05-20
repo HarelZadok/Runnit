@@ -5,14 +5,19 @@ Runnit OS is a desktop-style environment built with React and TypeScript that si
 ## What's New in v0.2.6
 
 ### 🎨 Enhanced Update Notification System
-
 - Beautiful animated update notifier with stunning visual effects
 - Smooth gradient animations, particle effects, and backdrop blur
 - Interactive refresh button with elegant hover animations
 - Version tracking with persistent settings management
 
-### 💻 New Code Editor App
+### 🚀 Live-Reloading App Development (Hot-Reload)
+- **Instant Custom App Creation**: Build and preview your own OS applications directly inside the environment using React and TypeScript (TSX).
+- **On-Screen Live Refresh**: Pressing `Control + S` instantly compiles and hot-reloads your custom application directly on the desktop without requiring a full browser refresh.
+- **Dynamic App Launcher Integration**: Any `.osapp` file created in the `/.apps/` folder automatically maps to the app launcher, remaining permanently visible and launchable until the file is deleted.
+- **Developer Workflow**: To unlock this feature, simply enable **"Show Hidden Files"** in the Settings app, navigate to the hidden Root apps directory (`/.apps/`), and create a file with the `.osapp` extension.
+- **Built-in Boilerplate**: Includes a `template.osapp` file pre-loaded in the folder to give you a head start with standard window layouts and hooks.
 
+### 💻 New Code Editor App
 - Full-featured Monaco Editor integration for in-browser code editing
 - Complete TypeScript/React support with syntax highlighting and IntelliSense
 - Real-time type checking and error detection
@@ -20,13 +25,11 @@ Runnit OS is a desktop-style environment built with React and TypeScript that si
 - Professional IDE-like experience with modern editor features
 
 ### 🌐 Portfolio Showcase App
-
 - Integrated portfolio viewer displaying developer's work
 - Seamless iframe integration with loading states
 - Professional presentation of projects and skills
 
 ### 🗂️ Advanced File Management System
-
 - Complete virtual file system with persistent storage
 - Create, edit, move, and delete files and folders
 - Smart trash system with restore and permanent delete options
@@ -34,7 +37,6 @@ Runnit OS is a desktop-style environment built with React and TypeScript that si
 - Drag-and-drop file operations between directories
 
 ### 💾 Persistent State Management
-
 - **Complete session persistence** - Your desktop layout, settings, and app states are preserved
 - Files, folders, and trash contents remain intact between browser refreshes
 - Window positions, sizes, and application data automatically restored
@@ -42,14 +44,12 @@ Runnit OS is a desktop-style environment built with React and TypeScript that si
 - Seamless experience that maintains continuity like a real operating system
 
 ### 🪟 Enhanced Window Management
-
 - **Individual taskbar minimization** - Each window gets its own taskbar icon when minimized
 - **Keyboard shortcuts** - Use Ctrl+Tab to cycle through windows and Ctrl+W to close the focused window
 - **Smooth animations** - Windows fade in when opening and fade out when closing
 - **Smart taskbar interactions** - Click a focused window's taskbar icon to minimize and unfocus it
 
 ### ⚡ Technology Stack Upgrades
-
 - **Next.js 15.4.3** with Turbopack for ultra-fast development
 - **React 19.1.0** with latest features and performance improvements
 - **Tailwind CSS 4.0** for modern styling capabilities
@@ -57,7 +57,6 @@ Runnit OS is a desktop-style environment built with React and TypeScript that si
 - Enhanced TypeScript support with strict type checking
 
 ### 🎭 UI/UX Enhancements
-
 - Mobile device detection with appropriate messaging
 - Enhanced window management with better resize handles
 - Improved desktop selection with visual feedback
@@ -66,20 +65,22 @@ Runnit OS is a desktop-style environment built with React and TypeScript that si
 
 ## Key Features
 
-- **Persistent Desktop Environment**: Your complete OS state, including desktop layout, files, and settings, automatically saves and restores between browser sessions
-- Customizable desktop: change wallpaper and rearrange draggable icons
-- Taskbar with searchable app launcher, running app indicators, and quick access to apps
-- Advanced window manager: open multiple resizable, movable, minimizable, and maximizable windows with snap support and smooth animations
-- **Keyboard shortcuts**: Ctrl+Tab to switch windows, Ctrl+W to close focused window
-- Built-in OS apps:
-  - **Code Editor**: Professional Monaco-based code editor with TypeScript support
-  - **Files**: Navigate and manage a complete virtual file system
-  - **Portfolio**: Showcase and view developer portfolios
-  - **Trash**: Restore or permanently delete files with smart management
-- Settings panel: adjust preferences like theme, wallpaper, and keyboard shortcuts
-- Modular OSApp framework: easily add or remove apps with isolated state and icons
-- Global state management using Redux Toolkit for predictable, easy-to-debug updates
-- Responsive design: adapts seamlessly across different screen resolutions and window sizes
+* **Persistent Desktop Environment**: Your complete OS state, including desktop layout, files, and settings, automatically saves and restores between browser sessions.
+* **Customizable Desktop**: Change your wallpaper and rearrange draggable icons to fit your workflow.
+* **Dynamic Taskbar**: Access a searchable app launcher, view running app indicators, and quickly launch pinned applications.
+* **Advanced Window Manager**: Open multiple resizable, movable, minimizable, and maximizable windows with snap support and smooth animations.
+* **Keyboard Shortcuts**: Navigate efficiently with built-in hotkeys, including `Ctrl + Tab` to switch windows and `Ctrl + W` to close the focused window.
+* **Live React/TSX Extensibility**: Create native-feeling applications on the fly using `.osapp` files in the hidden `/.apps/` system folder, complete with a starter template and automatic `Ctrl + S` live-reloading.
+* **Automated App Lifecycle**: Custom `.osapp` configurations automatically register as launchers in the start menu and stay pinned permanently unless the corresponding source file is removed.
+* **Built-in OS Apps**:
+    * *Code Editor*: Professional Monaco-based code editor with TypeScript support.
+    * *Files*: Navigate and manage a complete virtual file system, including hidden system files.
+    * *Portfolio*: Showcase and view developer portfolios natively.
+    * *Trash*: Restore or permanently delete files with smart storage management.
+* **Comprehensive Settings Panel**: Adjust system preferences like themes, wallpapers, toggles for hidden system files, and keyboard shortcuts.
+* **Modular OSApp Framework**: Easily add or remove apps with isolated states and standalone icons.
+* **Global State Management**: Powered by Redux Toolkit for predictable, easy-to-debug system updates.
+* **Responsive Design**: Adapts seamlessly across different screen resolutions and monitor sizes.
 
 ## Usage Guide
 
@@ -153,7 +154,7 @@ src/
 
 ## Customization
 
-### Adding New OS Apps
+### Adding New Prebuilt OS Apps
 
 - Create a folder under `src/lib/OSApps/apps/` with your app component and assets
 - Update `AppRegistry.ts` with metadata (name, icon, default props)
